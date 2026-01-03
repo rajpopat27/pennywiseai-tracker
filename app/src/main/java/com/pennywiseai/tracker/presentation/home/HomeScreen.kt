@@ -265,7 +265,7 @@ fun HomeScreen(
             // Transaction History Header
             item {
                 ReferenceTransactionHistoryHeader(
-                    onFilterClick = onNavigateToAnalytics
+                    onSearchClick = onNavigateToTransactionsWithSearch
                 )
             }
 
@@ -936,7 +936,7 @@ private fun ReferenceTransactionFilterTabs(
 
 @Composable
 private fun ReferenceTransactionHistoryHeader(
-    onFilterClick: () -> Unit = {}
+    onSearchClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier
@@ -959,9 +959,9 @@ private fun ReferenceTransactionHistoryHeader(
             )
         }
 
-        // Filter circular button - opens Analytics
+        // Search circular button - opens Transactions screen
         Surface(
-            onClick = onFilterClick,
+            onClick = onSearchClick,
             shape = CircleShape,
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
             modifier = Modifier.size(36.dp)
@@ -971,8 +971,8 @@ private fun ReferenceTransactionHistoryHeader(
                 modifier = Modifier.fillMaxSize()
             ) {
                 Icon(
-                    imageVector = Icons.Default.FilterList,
-                    contentDescription = "Filter transactions",
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search transactions",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(18.dp)
                 )

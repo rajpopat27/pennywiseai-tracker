@@ -53,6 +53,23 @@ class TransactionsViewModel @Inject constructor(
     private val _selectedCurrency = MutableStateFlow("INR") // Default to INR
     val selectedCurrency: StateFlow<String> = _selectedCurrency.asStateFlow()
 
+    // Additional filters (matching AnalyticsScreen)
+    private val _merchantFilter = MutableStateFlow<String?>(null)
+    val merchantFilter: StateFlow<String?> = _merchantFilter.asStateFlow()
+
+    private val _amountFilter = MutableStateFlow<com.pennywiseai.tracker.ui.screens.analytics.AmountFilter?>(null)
+    val amountFilter: StateFlow<com.pennywiseai.tracker.ui.screens.analytics.AmountFilter?> = _amountFilter.asStateFlow()
+
+    private val _accountFilter = MutableStateFlow<String?>(null)
+    val accountFilter: StateFlow<String?> = _accountFilter.asStateFlow()
+
+    // Available filter options (populated from database)
+    private val _availableCategories = MutableStateFlow<List<String>>(emptyList())
+    val availableCategories: StateFlow<List<String>> = _availableCategories.asStateFlow()
+
+    private val _availableAccounts = MutableStateFlow<List<String>>(emptyList())
+    val availableAccounts: StateFlow<List<String>> = _availableAccounts.asStateFlow()
+
     // Store custom date range as epoch days to survive process death
     // Stored as Pair<Long, Long> (startEpochDay, endEpochDay) in SavedStateHandle
     private val _customDateRangeEpochDays = savedStateHandle.getStateFlow<Pair<Long, Long>?>("customDateRange", null)
@@ -193,6 +210,9 @@ class TransactionsViewModel @Inject constructor(
     }
     
     init {
+        // Load available filter options
+        loadAvailableFilterOptions()
+
         // Manually combine all flows using transformLatest
         merge(
             searchQuery.debounce(300).map { "search" },
@@ -201,7 +221,10 @@ class TransactionsViewModel @Inject constructor(
             transactionTypeFilter.map { "typeFilter" },
             selectedCurrency.map { "currency" },
             sortOption.map { "sort" },
-            customDateRange.map { "customDate" }
+            customDateRange.map { "customDate" },
+            merchantFilter.map { "merchant" },
+            amountFilter.map { "amount" },
+            accountFilter.map { "account" }
         )
             .transformLatest { trigger ->
                 // Get current values from all StateFlows
@@ -211,9 +234,12 @@ class TransactionsViewModel @Inject constructor(
                 val typeFilter = transactionTypeFilter.value
                 val currency = selectedCurrency.value
                 val sort = sortOption.value
+                val merchant = merchantFilter.value
+                val amount = amountFilter.value
+                val account = accountFilter.value
 
                 // Get filtered transactions
-                getFilteredTransactions(query, period, category, typeFilter)
+                getFilteredTransactions(query, period, category, typeFilter, merchant, amount, account)
                     .collect { transactions ->
                         // Filter by currency
                         val currencyFilteredTransactions = transactions.filter {
@@ -238,6 +264,24 @@ class TransactionsViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
+    }
+
+    private fun loadAvailableFilterOptions() {
+        viewModelScope.launch {
+            transactionRepository.getAllTransactions().collect { transactions ->
+                // Get unique categories
+                _availableCategories.value = transactions
+                    .mapNotNull { it.category }
+                    .distinct()
+                    .sorted()
+
+                // Get unique bank names (accounts)
+                _availableAccounts.value = transactions
+                    .mapNotNull { it.bankName }
+                    .distinct()
+                    .sorted()
+            }
+        }
     }
     
     fun updateSearchQuery(query: String) {
@@ -267,6 +311,31 @@ class TransactionsViewModel @Inject constructor(
 
     fun selectCurrency(currency: String) {
         _selectedCurrency.value = currency
+    }
+
+    // Additional filter setters (matching AnalyticsScreen)
+    fun setMerchantFilter(merchant: String?) {
+        _merchantFilter.value = merchant?.takeIf { it.isNotBlank() }
+    }
+
+    fun setAmountFilter(operator: com.pennywiseai.tracker.ui.screens.analytics.AmountOperator?, value: BigDecimal?) {
+        _amountFilter.value = if (operator != null && value != null) {
+            com.pennywiseai.tracker.ui.screens.analytics.AmountFilter(operator, value)
+        } else {
+            null
+        }
+    }
+
+    fun setAccountFilter(account: String?) {
+        _accountFilter.value = account
+    }
+
+    fun clearAllCustomFilters() {
+        _merchantFilter.value = null
+        _amountFilter.value = null
+        _categoryFilter.value = null
+        _accountFilter.value = null
+        _transactionTypeFilter.value = TransactionTypeFilter.ALL
     }
 
     /**
@@ -427,7 +496,10 @@ class TransactionsViewModel @Inject constructor(
         searchQuery: String,
         period: TimePeriod,
         category: String?,
-        typeFilter: TransactionTypeFilter
+        typeFilter: TransactionTypeFilter,
+        merchantFilter: String? = null,
+        amountFilter: com.pennywiseai.tracker.ui.screens.analytics.AmountFilter? = null,
+        accountFilter: String? = null
     ): Flow<List<TransactionEntity>> {
         // Start with the base flow based on category filter
         val baseFlow = if (category != null) {
@@ -436,7 +508,7 @@ class TransactionsViewModel @Inject constructor(
         } else {
             transactionRepository.getAllTransactions()
         }
-        
+
         // Apply period filter
         val periodFilteredFlow = when (period) {
             TimePeriod.ALL -> baseFlow
@@ -480,7 +552,7 @@ class TransactionsViewModel @Inject constructor(
                 }
             }
         }
-        
+
         // Apply transaction type filter
         val typeFilteredFlow = periodFilteredFlow.map { transactions ->
             when (typeFilter) {
@@ -492,12 +564,52 @@ class TransactionsViewModel @Inject constructor(
                 TransactionTypeFilter.INVESTMENT -> transactions.filter { it.transactionType == TransactionType.INVESTMENT }
             }
         }
-        
+
+        // Apply merchant filter
+        val merchantFilteredFlow = if (merchantFilter != null) {
+            typeFilteredFlow.map { transactions ->
+                transactions.filter { it.merchantName.contains(merchantFilter, ignoreCase = true) }
+            }
+        } else {
+            typeFilteredFlow
+        }
+
+        // Apply amount filter
+        val amountFilteredFlow = if (amountFilter != null) {
+            merchantFilteredFlow.map { transactions ->
+                transactions.filter { transaction ->
+                    when (amountFilter.operator) {
+                        com.pennywiseai.tracker.ui.screens.analytics.AmountOperator.EQUALS ->
+                            transaction.amount.compareTo(amountFilter.value) == 0
+                        com.pennywiseai.tracker.ui.screens.analytics.AmountOperator.GREATER_THAN ->
+                            transaction.amount > amountFilter.value
+                        com.pennywiseai.tracker.ui.screens.analytics.AmountOperator.LESS_THAN ->
+                            transaction.amount < amountFilter.value
+                        com.pennywiseai.tracker.ui.screens.analytics.AmountOperator.GREATER_THAN_OR_EQUAL ->
+                            transaction.amount >= amountFilter.value
+                        com.pennywiseai.tracker.ui.screens.analytics.AmountOperator.LESS_THAN_OR_EQUAL ->
+                            transaction.amount <= amountFilter.value
+                    }
+                }
+            }
+        } else {
+            merchantFilteredFlow
+        }
+
+        // Apply account filter
+        val accountFilteredFlow = if (accountFilter != null) {
+            amountFilteredFlow.map { transactions ->
+                transactions.filter { it.bankName?.contains(accountFilter, ignoreCase = true) == true }
+            }
+        } else {
+            amountFilteredFlow
+        }
+
         // Apply search filter
         return if (searchQuery.isBlank()) {
-            typeFilteredFlow
+            accountFilteredFlow
         } else {
-            typeFilteredFlow.map { transactions ->
+            accountFilteredFlow.map { transactions ->
                 transactions.filter { transaction ->
                     // Check merchant name and description
                     val matchesMerchant = transaction.merchantName.contains(searchQuery, ignoreCase = true)

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.ui.unit.dp
@@ -50,12 +51,13 @@ fun MainScreen(
     rootNavController: NavHostController? = null,
     navController: NavHostController = rememberNavController(),
     themeViewModel: ThemeViewModel = hiltViewModel(),
-    spotlightViewModel: SpotlightViewModel = hiltViewModel()
+    spotlightViewModel: SpotlightViewModel = hiltViewModel(),
+    homeViewModel: com.pennywiseai.tracker.presentation.home.HomeViewModel = hiltViewModel()
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val spotlightState by spotlightViewModel.spotlightState.collectAsState()
-    
+
     Box(modifier = Modifier.fillMaxSize()) {
             Scaffold(
             topBar = {
@@ -77,13 +79,10 @@ fun MainScreen(
                 },
                 showBackButton = currentRoute in listOf("settings", "subscriptions", "transactions", "categories", "unrecognized_sms", "manage_accounts", "add_account", "faq"),
                 showSettingsButton = currentRoute !in listOf("settings", "categories", "unrecognized_sms", "manage_accounts", "add_account", "faq", "pending"),
-                showDiscordButton = currentRoute !in listOf("settings", "categories", "unrecognized_sms", "manage_accounts", "add_account", "faq", "pending"),
+                showSyncButton = currentRoute !in listOf("settings", "categories", "unrecognized_sms", "manage_accounts", "add_account", "faq", "pending"),
                 onBackClick = { navController.popBackStack() },
                 onSettingsClick = { navController.navigate("settings") },
-                onDiscordClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://discord.gg/H3xWeMWjKQ"))
-                    context.startActivity(intent)
-                }
+                onSyncClick = { homeViewModel.scanSmsMessages() }
             )
         },
         bottomBar = {
@@ -346,10 +345,10 @@ private fun PennyWiseTopAppBar(
     title: String,
     showBackButton: Boolean = false,
     showSettingsButton: Boolean = true,
-    showDiscordButton: Boolean = true,
+    showSyncButton: Boolean = true,
     onBackClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
-    onDiscordClick: () -> Unit = {}
+    onSyncClick: () -> Unit = {}
 ) {
     Column {
         TopAppBar(
@@ -368,12 +367,12 @@ private fun PennyWiseTopAppBar(
                 }
             },
             actions = {
-                if (showDiscordButton) {
-                    IconButton(onClick = onDiscordClick) {
+                if (showSyncButton) {
+                    IconButton(onClick = onSyncClick) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_discord),
-                            contentDescription = "Join Discord Community",
-                            tint = Color(0xFF5865F2) // Discord brand color
+                            imageVector = Icons.Default.Sync,
+                            contentDescription = "Sync SMS",
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 }

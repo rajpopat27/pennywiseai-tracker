@@ -16,11 +16,8 @@ import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.automirrored.filled.TrendingDown
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.automirrored.filled.ShowChart
-import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,7 +38,6 @@ import com.pennywiseai.tracker.data.database.entity.TransactionType
 import com.pennywiseai.tracker.presentation.common.TimePeriod
 import com.pennywiseai.tracker.presentation.common.TransactionTypeFilter
 import com.pennywiseai.tracker.ui.components.*
-import com.pennywiseai.tracker.ui.components.CollapsibleFilterRow
 import com.pennywiseai.tracker.ui.theme.*
 import com.pennywiseai.tracker.utils.CurrencyFormatter
 import com.pennywiseai.tracker.utils.DateRangeUtils
@@ -78,6 +74,13 @@ fun TransactionsScreen(
     val smsScanMonths by viewModel.smsScanMonths.collectAsState()
     val customDateRange by viewModel.customDateRange.collectAsState()
 
+    // Additional filter states (matching AnalyticsScreen)
+    val merchantFilter by viewModel.merchantFilter.collectAsState()
+    val amountFilter by viewModel.amountFilter.collectAsState()
+    val accountFilter by viewModel.accountFilter.collectAsState()
+    val availableCategories by viewModel.availableCategories.collectAsState()
+    val availableAccounts by viewModel.availableAccounts.collectAsState()
+
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var showExportDialog by remember { mutableStateOf(false) }
@@ -90,10 +93,13 @@ fun TransactionsScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     
     // Calculate active filter count for advanced filters
-    val activeFilterCount = listOf(
-        transactionTypeFilter != TransactionTypeFilter.ALL,
-        categoryFilter != null
-    ).count { it }
+    val activeFilterCount = listOfNotNull(
+        if (transactionTypeFilter != TransactionTypeFilter.ALL) transactionTypeFilter else null,
+        categoryFilter,
+        merchantFilter,
+        amountFilter,
+        accountFilter
+    ).size
 
     // Remember scroll position across navigation
     val listState = rememberSaveable(saver = LazyListState.Saver) {
@@ -352,64 +358,27 @@ fun TransactionsScreen(
             }
         }
         
-        // Collapsible Advanced Filters
-        CollapsibleFilterRow(
+        // Filters Section (matching AnalyticsScreen)
+        TransactionFiltersSection(
             isExpanded = showAdvancedFilters,
-            activeFilterCount = activeFilterCount,
             onToggle = { showAdvancedFilters = !showAdvancedFilters },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            // Transaction Type Filter Chips
-            LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(horizontal = Dimensions.Padding.content),
-                horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
-            ) {
-                items(TransactionTypeFilter.values().toList()) { typeFilter ->
-                    FilterChip(
-                        selected = transactionTypeFilter == typeFilter,
-                        onClick = { viewModel.setTransactionTypeFilter(typeFilter) },
-                        label = { Text(typeFilter.label) },
-                        leadingIcon = if (transactionTypeFilter == typeFilter) {
-                            {
-                                when (typeFilter) {
-                                    TransactionTypeFilter.INCOME -> Icon(
-                                        Icons.AutoMirrored.Filled.TrendingUp,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(Dimensions.Icon.small)
-                                    )
-                                    TransactionTypeFilter.EXPENSE -> Icon(
-                                        Icons.AutoMirrored.Filled.TrendingDown,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(Dimensions.Icon.small)
-                                    )
-                                    TransactionTypeFilter.CREDIT -> Icon(
-                                        Icons.Default.CreditCard,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(Dimensions.Icon.small)
-                                    )
-                                    TransactionTypeFilter.TRANSFER -> Icon(
-                                        Icons.Default.SwapHoriz,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(Dimensions.Icon.small)
-                                    )
-                                    TransactionTypeFilter.INVESTMENT -> Icon(
-                                        Icons.AutoMirrored.Filled.ShowChart,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(Dimensions.Icon.small)
-                                    )
-                                    else -> null
-                                }
-                            }
-                        } else null,
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onTertiaryContainer
-                        )
-                    )
-                }
-            }
-        }
+            transactionTypeFilter = transactionTypeFilter,
+            onTransactionTypeFilterChange = { viewModel.setTransactionTypeFilter(it) },
+            merchantFilter = merchantFilter,
+            onMerchantFilterChange = { viewModel.setMerchantFilter(it) },
+            amountFilter = amountFilter,
+            onAmountFilterChange = { operator, value -> viewModel.setAmountFilter(operator, value) },
+            categoryFilter = categoryFilter,
+            onCategoryFilterChange = { if (it != null) viewModel.setCategoryFilter(it) else viewModel.clearCategoryFilter() },
+            availableCategories = availableCategories,
+            accountFilter = accountFilter,
+            onAccountFilterChange = { viewModel.setAccountFilter(it) },
+            availableAccounts = availableAccounts,
+            onClearAllFilters = { viewModel.clearAllCustomFilters() },
+            modifier = Modifier
+                .padding(horizontal = Dimensions.Padding.content)
+                .padding(top = Spacing.md)
+        )
         
         // Totals Card - Moved after filters
         TransactionTotalsCard(
@@ -424,51 +393,7 @@ fun TransactionsScreen(
                 .padding(horizontal = Dimensions.Padding.content)
                 .padding(top = Spacing.sm)
         )
-        
-        // Category Filter Chip (if active) - Moved to its own row
-        categoryFilter?.let { category ->
-            LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = Spacing.xs),
-                contentPadding = PaddingValues(horizontal = Dimensions.Padding.content),
-                horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
-            ) {
-                item {
-                    FilterChip(
-                        selected = true,
-                        onClick = { /* No action on click, use trailing icon to clear */ },
-                        label = { Text(category) },
-                        leadingIcon = {
-                            categoriesMap[category]?.let { categoryEntity ->
-                                CategoryChip(
-                                    category = categoryEntity,
-                                    showText = false,
-                                    modifier = Modifier.padding(start = 4.dp)
-                                )
-                            }
-                        },
-                        trailingIcon = {
-                            IconButton(
-                                onClick = { viewModel.clearCategoryFilter() },
-                                modifier = Modifier.size(18.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "Clear category filter",
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                        },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    )
-                }
-            }
-        }
-        
+
         // Transaction List
         when {
             uiState.isLoading -> {
@@ -758,4 +683,639 @@ private fun EmptyTransactionsState(
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+private fun TransactionFiltersSection(
+    isExpanded: Boolean,
+    onToggle: () -> Unit,
+    transactionTypeFilter: TransactionTypeFilter,
+    onTransactionTypeFilterChange: (TransactionTypeFilter) -> Unit,
+    merchantFilter: String?,
+    onMerchantFilterChange: (String?) -> Unit,
+    amountFilter: com.pennywiseai.tracker.ui.screens.analytics.AmountFilter?,
+    onAmountFilterChange: (com.pennywiseai.tracker.ui.screens.analytics.AmountOperator?, java.math.BigDecimal?) -> Unit,
+    categoryFilter: String?,
+    onCategoryFilterChange: (String?) -> Unit,
+    availableCategories: List<String>,
+    accountFilter: String?,
+    onAccountFilterChange: (String?) -> Unit,
+    availableAccounts: List<String>,
+    onClearAllFilters: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var showMerchantDialog by remember { mutableStateOf(false) }
+    var showAmountDialog by remember { mutableStateOf(false) }
+    var showCategoryDialog by remember { mutableStateOf(false) }
+    var showAccountDialog by remember { mutableStateOf(false) }
+
+    val activeFilterCount = listOfNotNull(
+        merchantFilter,
+        amountFilter,
+        categoryFilter,
+        accountFilter,
+        if (transactionTypeFilter != TransactionTypeFilter.ALL) transactionTypeFilter else null
+    ).size
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        // Header with toggle
+        Surface(
+            onClick = onToggle,
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            shape = MaterialTheme.shapes.medium
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Spacing.sm, vertical = Spacing.xs),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.xs)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.FilterList,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = "Filters",
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                    if (activeFilterCount > 0) {
+                        Badge(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ) {
+                            Text(activeFilterCount.toString())
+                        }
+                    }
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.xs)
+                ) {
+                    if (activeFilterCount > 0) {
+                        TextButton(
+                            onClick = { onClearAllFilters() },
+                            contentPadding = PaddingValues(horizontal = Spacing.xs)
+                        ) {
+                            Text("Clear", style = MaterialTheme.typography.labelSmall)
+                        }
+                    }
+                    Icon(
+                        imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = if (isExpanded) "Collapse" else "Expand",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+
+        // Expandable content
+        if (isExpanded) {
+            FlowRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = Spacing.sm),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+                verticalArrangement = Arrangement.spacedBy(Spacing.xs)
+            ) {
+                // Income Chip
+                val isIncomeSelected = transactionTypeFilter == TransactionTypeFilter.INCOME
+                FilterChip(
+                    selected = isIncomeSelected,
+                    onClick = {
+                        onTransactionTypeFilterChange(
+                            if (isIncomeSelected) TransactionTypeFilter.ALL
+                            else TransactionTypeFilter.INCOME
+                        )
+                    },
+                    label = {
+                        Text(
+                            text = "Income",
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    },
+                    modifier = Modifier.height(32.dp),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                )
+
+                // Expense Chip
+                val isExpenseSelected = transactionTypeFilter == TransactionTypeFilter.EXPENSE
+                FilterChip(
+                    selected = isExpenseSelected,
+                    onClick = {
+                        onTransactionTypeFilterChange(
+                            if (isExpenseSelected) TransactionTypeFilter.ALL
+                            else TransactionTypeFilter.EXPENSE
+                        )
+                    },
+                    label = {
+                        Text(
+                            text = "Expense",
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    },
+                    modifier = Modifier.height(32.dp),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                )
+
+                // Merchant Chip
+                FilterChip(
+                    selected = merchantFilter != null,
+                    onClick = { showMerchantDialog = true },
+                    label = {
+                        Text(
+                            text = merchantFilter ?: "Merchant",
+                            style = MaterialTheme.typography.labelSmall,
+                            maxLines = 1
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Store,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    },
+                    modifier = Modifier.height(32.dp),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                )
+
+                // Amount Chip
+                val amountLabel = amountFilter?.let {
+                    "${it.operator.symbol}${it.value.toPlainString()}"
+                } ?: "Amount"
+                FilterChip(
+                    selected = amountFilter != null,
+                    onClick = { showAmountDialog = true },
+                    label = {
+                        Text(
+                            text = amountLabel,
+                            style = MaterialTheme.typography.labelSmall,
+                            maxLines = 1
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.AttachMoney,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    },
+                    modifier = Modifier.height(32.dp),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                )
+
+                // Category Chip
+                FilterChip(
+                    selected = categoryFilter != null,
+                    onClick = { showCategoryDialog = true },
+                    label = {
+                        Text(
+                            text = categoryFilter ?: "Category",
+                            style = MaterialTheme.typography.labelSmall,
+                            maxLines = 1
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Category,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    },
+                    modifier = Modifier.height(32.dp),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                )
+
+                // Account Chip
+                FilterChip(
+                    selected = accountFilter != null,
+                    onClick = { showAccountDialog = true },
+                    label = {
+                        Text(
+                            text = accountFilter ?: "Account",
+                            style = MaterialTheme.typography.labelSmall,
+                            maxLines = 1
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.AccountBalance,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    },
+                    modifier = Modifier.height(32.dp),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                )
+            }
+        }
+    }
+
+    // Dialogs
+    if (showMerchantDialog) {
+        MerchantFilterDialog(
+            currentValue = merchantFilter,
+            onDismiss = { showMerchantDialog = false },
+            onConfirm = { value ->
+                onMerchantFilterChange(value)
+                showMerchantDialog = false
+            },
+            onClear = {
+                onMerchantFilterChange(null)
+                showMerchantDialog = false
+            }
+        )
+    }
+
+    if (showAmountDialog) {
+        AmountFilterDialog(
+            currentFilter = amountFilter,
+            onDismiss = { showAmountDialog = false },
+            onConfirm = { operator, value ->
+                onAmountFilterChange(operator, value)
+                showAmountDialog = false
+            },
+            onClear = {
+                onAmountFilterChange(null, null)
+                showAmountDialog = false
+            }
+        )
+    }
+
+    if (showCategoryDialog) {
+        CategoryFilterDialog(
+            currentValue = categoryFilter,
+            availableCategories = availableCategories,
+            onDismiss = { showCategoryDialog = false },
+            onConfirm = { value ->
+                onCategoryFilterChange(value)
+                showCategoryDialog = false
+            },
+            onClear = {
+                onCategoryFilterChange(null)
+                showCategoryDialog = false
+            }
+        )
+    }
+
+    if (showAccountDialog) {
+        AccountFilterDialog(
+            currentValue = accountFilter,
+            availableAccounts = availableAccounts,
+            onDismiss = { showAccountDialog = false },
+            onConfirm = { value ->
+                onAccountFilterChange(value)
+                showAccountDialog = false
+            },
+            onClear = {
+                onAccountFilterChange(null)
+                showAccountDialog = false
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MerchantFilterDialog(
+    currentValue: String?,
+    onDismiss: () -> Unit,
+    onConfirm: (String?) -> Unit,
+    onClear: () -> Unit
+) {
+    var text by remember { mutableStateOf(currentValue ?: "") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.Store,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
+        },
+        title = { Text("Filter by Merchant") },
+        text = {
+            OutlinedTextField(
+                value = text,
+                onValueChange = { text = it },
+                label = { Text("Merchant name") },
+                placeholder = { Text("e.g., Amazon, Swiggy") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = { onConfirm(text.takeIf { it.isNotBlank() }) },
+                enabled = text.isNotBlank()
+            ) {
+                Text("Apply")
+            }
+        },
+        dismissButton = {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+                if (currentValue != null) {
+                    TextButton(onClick = onClear) {
+                        Text("Clear")
+                    }
+                }
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AmountFilterDialog(
+    currentFilter: com.pennywiseai.tracker.ui.screens.analytics.AmountFilter?,
+    onDismiss: () -> Unit,
+    onConfirm: (com.pennywiseai.tracker.ui.screens.analytics.AmountOperator, java.math.BigDecimal) -> Unit,
+    onClear: () -> Unit
+) {
+    var amountText by remember { mutableStateOf(currentFilter?.value?.toPlainString() ?: "") }
+    var selectedOperator by remember { mutableStateOf(currentFilter?.operator ?: com.pennywiseai.tracker.ui.screens.analytics.AmountOperator.GREATER_THAN) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.AttachMoney,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
+        },
+        title = { Text("Filter by Amount") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                Text(
+                    text = "Condition",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.xs)
+                ) {
+                    items(com.pennywiseai.tracker.ui.screens.analytics.AmountOperator.values().toList()) { operator ->
+                        FilterChip(
+                            selected = selectedOperator == operator,
+                            onClick = { selectedOperator = operator },
+                            label = {
+                                Text(
+                                    "${operator.symbol} ${operator.label}",
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+                            },
+                            modifier = Modifier.height(32.dp)
+                        )
+                    }
+                }
+
+                OutlinedTextField(
+                    value = amountText,
+                    onValueChange = { newValue ->
+                        if (newValue.isEmpty() || newValue.matches(Regex("^\\d*\\.?\\d*$"))) {
+                            amountText = newValue
+                        }
+                    },
+                    label = { Text("Amount") },
+                    placeholder = { Text("Enter amount") },
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    amountText.toBigDecimalOrNull()?.let { amount ->
+                        onConfirm(selectedOperator, amount)
+                    }
+                },
+                enabled = amountText.toBigDecimalOrNull() != null
+            ) {
+                Text("Apply")
+            }
+        },
+        dismissButton = {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+                if (currentFilter != null) {
+                    TextButton(onClick = onClear) {
+                        Text("Clear")
+                    }
+                }
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+            }
+        }
+    )
+}
+
+@Composable
+private fun CategoryFilterDialog(
+    currentValue: String?,
+    availableCategories: List<String>,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+    onClear: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.Category,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
+        },
+        title = { Text("Filter by Category") },
+        text = {
+            if (availableCategories.isEmpty()) {
+                Text(
+                    text = "No categories available",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 300.dp),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.xs)
+                ) {
+                    items(availableCategories) { category ->
+                        Surface(
+                            onClick = { onConfirm(category) },
+                            shape = MaterialTheme.shapes.small,
+                            color = if (category == currentValue) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.surface
+                            },
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp,
+                                if (category == currentValue) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.outlineVariant
+                                }
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(Spacing.sm),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = category,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                if (category == currentValue) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = "Selected",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+                if (currentValue != null) {
+                    TextButton(onClick = onClear) {
+                        Text("Clear")
+                    }
+                }
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+            }
+        }
+    )
+}
+
+@Composable
+private fun AccountFilterDialog(
+    currentValue: String?,
+    availableAccounts: List<String>,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+    onClear: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.AccountBalance,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
+        },
+        title = { Text("Filter by Account") },
+        text = {
+            if (availableAccounts.isEmpty()) {
+                Text(
+                    text = "No accounts available",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 300.dp),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.xs)
+                ) {
+                    items(availableAccounts) { account ->
+                        Surface(
+                            onClick = { onConfirm(account) },
+                            shape = MaterialTheme.shapes.small,
+                            color = if (account == currentValue) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.surface
+                            },
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp,
+                                if (account == currentValue) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.outlineVariant
+                                }
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(Spacing.sm),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = account,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                if (account == currentValue) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = "Selected",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+                if (currentValue != null) {
+                    TextButton(onClick = onClear) {
+                        Text("Clear")
+                    }
+                }
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+            }
+        }
+    )
 }
