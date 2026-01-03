@@ -73,11 +73,12 @@ fun MainScreen(
                     "manage_accounts" -> "Manage Accounts"
                     "add_account" -> "Add Account"
                     "faq" -> "Help & FAQ"
+                    "pending" -> "Pending Transactions"
                     else -> "PennyWise"
                 },
                 showBackButton = currentRoute in listOf("chat", "settings", "subscriptions", "transactions", "categories", "unrecognized_sms", "manage_accounts", "add_account", "faq"),
-                showSettingsButton = currentRoute !in listOf("settings", "categories", "unrecognized_sms", "manage_accounts", "add_account", "faq"),
-                showDiscordButton = currentRoute !in listOf("settings", "categories", "unrecognized_sms", "manage_accounts", "add_account", "faq"), // Hide on these screens
+                showSettingsButton = currentRoute !in listOf("settings", "categories", "unrecognized_sms", "manage_accounts", "add_account", "faq", "pending"),
+                showDiscordButton = currentRoute !in listOf("settings", "categories", "unrecognized_sms", "manage_accounts", "add_account", "faq", "pending"),
                 onBackClick = { navController.popBackStack() },
                 onSettingsClick = { navController.navigate("settings") },
                 onDiscordClick = {
@@ -88,7 +89,7 @@ fun MainScreen(
         },
         bottomBar = {
             // Show bottom navigation only for main screens
-            if (currentRoute in listOf("home", "analytics")) {
+            if (currentRoute in listOf("home", "pending", "analytics")) {
                 PennyWiseBottomNavigation(navController = navController)
             }
         }
@@ -132,6 +133,12 @@ fun MainScreen(
                     onFabPositioned = { position ->
                         spotlightViewModel.updateFabPosition(position)
                     }
+                )
+            }
+
+            composable("pending") {
+                com.pennywiseai.tracker.presentation.pending.PendingTransactionsContent(
+                    viewModel = hiltViewModel()
                 )
             }
             

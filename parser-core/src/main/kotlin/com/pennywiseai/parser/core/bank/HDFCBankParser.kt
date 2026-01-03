@@ -1,4 +1,4 @@
-package com.pennywiseai.parser.core.bank
+ package com.pennywiseai.parser.core.bank
 
 import com.pennywiseai.parser.core.CompiledPatterns
 import com.pennywiseai.parser.core.MandateInfo

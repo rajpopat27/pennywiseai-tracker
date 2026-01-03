@@ -222,6 +222,39 @@ fun PennyWiseNavHost(
                 navController = navController
             )
         }
-        
+
+        composable<PendingTransactions>(
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None },
+            popEnterTransition = { EnterTransition.None },
+            popExitTransition = { ExitTransition.None }
+        ) {
+            com.pennywiseai.tracker.presentation.pending.PendingTransactionsScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable<PendingTransactionReview>(
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None },
+            popEnterTransition = { EnterTransition.None },
+            popExitTransition = { ExitTransition.None }
+        ) { backStackEntry ->
+            val review = backStackEntry.toRoute<PendingTransactionReview>()
+            com.pennywiseai.tracker.presentation.pending.PendingTransactionReviewScreen(
+                pendingId = review.pendingId,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToPendingList = {
+                    navController.navigate(PendingTransactions) {
+                        popUpTo(PendingTransactionReview(review.pendingId)) { inclusive = true }
+                    }
+                }
+            )
+        }
+
     }
 }

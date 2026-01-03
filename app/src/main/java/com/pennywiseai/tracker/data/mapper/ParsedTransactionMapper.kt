@@ -2,6 +2,7 @@ package com.pennywiseai.tracker.data.mapper
 
 import com.pennywiseai.parser.core.ParsedTransaction
 import com.pennywiseai.tracker.core.Constants
+import com.pennywiseai.tracker.data.database.entity.PendingTransactionEntity
 import com.pennywiseai.tracker.data.database.entity.TransactionEntity
 import com.pennywiseai.tracker.data.database.entity.TransactionType
 import com.pennywiseai.tracker.ui.icons.CategoryMapping
@@ -105,4 +106,63 @@ fun com.pennywiseai.parser.core.TransactionType.toEntityType(): TransactionType 
         com.pennywiseai.parser.core.TransactionType.TRANSFER -> TransactionType.TRANSFER
         com.pennywiseai.parser.core.TransactionType.INVESTMENT -> TransactionType.INVESTMENT
     }
+}
+
+/**
+ * Maps ParsedTransaction from parser-core to PendingTransactionEntity
+ */
+fun ParsedTransaction.toPendingEntity(): PendingTransactionEntity {
+    val dateTime = LocalDateTime.ofInstant(
+        Instant.ofEpochMilli(timestamp),
+        ZoneId.systemDefault()
+    )
+
+    val normalizedMerchant = merchant?.let { normalizeMerchantName(it) }
+    val entityType = type.toEntityType()
+
+    return PendingTransactionEntity(
+        id = 0,
+        amount = amount,
+        merchantName = normalizedMerchant ?: "Unknown Merchant",
+        category = determineCategory(merchant, entityType),
+        transactionType = entityType,
+        dateTime = dateTime,
+        description = null,
+        smsBody = smsBody,
+        bankName = bankName,
+        smsSender = sender,
+        accountNumber = accountLast4,
+        balanceAfter = balance,
+        transactionHash = transactionHash?.takeIf { it.isNotBlank() } ?: generateTransactionId(),
+        currency = currency,
+        fromAccount = fromAccount,
+        toAccount = toAccount
+    )
+}
+
+/**
+ * Converts a PendingTransactionEntity to TransactionEntity for final save
+ */
+fun PendingTransactionEntity.toTransactionEntity(): TransactionEntity {
+    return TransactionEntity(
+        id = 0,
+        amount = amount,
+        merchantName = merchantName,
+        category = category,
+        transactionType = transactionType,
+        dateTime = dateTime,
+        description = description,
+        smsBody = smsBody,
+        bankName = bankName,
+        smsSender = smsSender,
+        accountNumber = accountNumber,
+        balanceAfter = balanceAfter,
+        transactionHash = transactionHash,
+        isRecurring = false,
+        createdAt = LocalDateTime.now(),
+        updatedAt = LocalDateTime.now(),
+        currency = currency,
+        fromAccount = fromAccount,
+        toAccount = toAccount
+    )
 }

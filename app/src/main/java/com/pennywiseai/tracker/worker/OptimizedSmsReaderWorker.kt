@@ -69,7 +69,8 @@ class OptimizedSmsReaderWorker @AssistedInject constructor(
     private val userPreferencesRepository: UserPreferencesRepository,
     private val unrecognizedSmsRepository: UnrecognizedSmsRepository,
     private val ruleRepository: RuleRepository,
-    private val ruleEngine: RuleEngine
+    private val ruleEngine: RuleEngine,
+    private val pendingTransactionManager: com.pennywiseai.tracker.data.manager.PendingTransactionManager
 ) : CoroutineWorker(appContext, workerParams) {
 
     companion object {
@@ -1018,6 +1019,38 @@ private suspend fun saveParsedTransaction(
     sms: SmsMessage
 ): Boolean {
     return try {
+        // Check if we should route to pending queue
+        val confirmationEnabled = userPreferencesRepository.getTransactionConfirmationEnabled()
+        val bypassForScans = userPreferencesRepository.getBypassConfirmationForScans()
+
+        // If confirmation is enabled AND bypass is disabled, route to pending
+        if (confirmationEnabled && !bypassForScans) {
+            val result = pendingTransactionManager.addPendingTransaction(parsedTransaction)
+            return when (result) {
+                is com.pennywiseai.tracker.data.manager.PendingTransactionManager.AddPendingResult.SavedAsPending -> {
+                    Log.d(TAG, "Transaction saved to pending queue: ${result.id}")
+                    true
+                }
+                is com.pennywiseai.tracker.data.manager.PendingTransactionManager.AddPendingResult.ShowDialog -> {
+                    Log.d(TAG, "Transaction saved to pending queue (foreground)")
+                    true
+                }
+                is com.pennywiseai.tracker.data.manager.PendingTransactionManager.AddPendingResult.Duplicate -> {
+                    Log.d(TAG, "Transaction is duplicate: ${result.reason}")
+                    false
+                }
+                is com.pennywiseai.tracker.data.manager.PendingTransactionManager.AddPendingResult.DirectSaved -> {
+                    Log.d(TAG, "Transaction saved directly: ${result.transactionId}")
+                    true
+                }
+                is com.pennywiseai.tracker.data.manager.PendingTransactionManager.AddPendingResult.Error -> {
+                    Log.e(TAG, "Error saving to pending: ${result.reason}")
+                    false
+                }
+            }
+        }
+
+        // Direct save path (bypass enabled or confirmation disabled)
         // Convert to entity and save
         val entity = parsedTransaction.toEntity()
 

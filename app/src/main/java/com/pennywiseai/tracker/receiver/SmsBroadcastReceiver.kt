@@ -12,6 +12,8 @@ import androidx.core.app.NotificationCompat
 import com.pennywiseai.tracker.MainActivity
 import com.pennywiseai.tracker.PennyWiseApplication
 import com.pennywiseai.tracker.R
+import com.pennywiseai.tracker.data.database.entity.PendingTransactionEntity
+import com.pennywiseai.tracker.data.manager.PendingTransactionManager
 import com.pennywiseai.tracker.data.manager.SmsTransactionProcessor
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -33,14 +35,20 @@ class SmsBroadcastReceiver : BroadcastReceiver() {
     interface SmsBroadcastReceiverEntryPoint {
         fun smsTransactionProcessor(): SmsTransactionProcessor
         fun transactionRepository(): com.pennywiseai.tracker.data.repository.TransactionRepository
+        fun pendingTransactionManager(): PendingTransactionManager
     }
 
     companion object {
         private const val TAG = "SmsBroadcastReceiver"
         const val ACTION_EDIT_TRANSACTION = "com.pennywiseai.tracker.ACTION_EDIT_TRANSACTION"
+        const val ACTION_REVIEW_PENDING = "com.pennywiseai.tracker.ACTION_REVIEW_PENDING"
+        const val ACTION_QUICK_CONFIRM = "com.pennywiseai.tracker.ACTION_QUICK_CONFIRM"
         const val EXTRA_TRANSACTION_ID = "transaction_id"
+        const val EXTRA_PENDING_ID = "pending_id"
         const val CHANNEL_ID = "transaction_notifications"
         const val CHANNEL_NAME = "Transaction Notifications"
+        const val PENDING_CHANNEL_ID = "pending_transaction_notifications"
+        const val PENDING_CHANNEL_NAME = "Pending Transaction Notifications"
     }
 
     private val receiverScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -100,36 +108,50 @@ class SmsBroadcastReceiver : BroadcastReceiver() {
                 // Use the shared processor to parse and save the transaction
                 val result = processor.processAndSaveTransaction(sender, body, timestamp)
 
-                if (result.success && result.transactionId != null) {
-                    Log.d(TAG, "Transaction saved with ID: ${result.transactionId}")
+                if (result.success) {
+                    // Check if this requires confirmation (pending transaction flow)
+                    if (result.requiresConfirmation && result.pendingTransaction != null) {
+                        Log.d(TAG, "Transaction pending confirmation: ${result.pendingTransaction.id}")
 
-                    // Show notification if app is not in foreground
-                    if (!isAppInForeground(context)) {
-                        // Get transaction details for notification
-                        val parser = com.pennywiseai.parser.core.bank.BankParserFactory.getParser(sender)
-                        val parsedTransaction = parser?.parse(body, sender, timestamp)
-
-                        if (parsedTransaction != null) {
-                            // Get entry point to access repository
-                            val entryPoint = EntryPointAccessors.fromApplication(
-                                context.applicationContext,
-                                SmsBroadcastReceiverEntryPoint::class.java
-                            )
-                            val repository = entryPoint.transactionRepository()
-
-                            // Fetch the saved transaction to get its category
-                            val savedTransaction = repository.getTransactionById(result.transactionId)
-
-                            showTransactionNotification(
+                        // Show notification for pending transaction (only if app is in background)
+                        if (!isAppInForeground(context)) {
+                            showPendingTransactionNotification(
                                 context = context,
-                                transactionId = result.transactionId,
-                                amount = parsedTransaction.amount.toString(),
-                                merchant = parsedTransaction.merchant ?: "Unknown",
-                                type = parsedTransaction.type.name,
-                                bankName = parsedTransaction.bankName ?: "Bank",
-                                category = savedTransaction?.category ?: "Others",
-                                repository = repository
+                                pending = result.pendingTransaction
                             )
+                        }
+                    } else if (result.transactionId != null) {
+                        // Direct save flow (confirmation disabled)
+                        Log.d(TAG, "Transaction saved with ID: ${result.transactionId}")
+
+                        // Show notification if app is not in foreground
+                        if (!isAppInForeground(context)) {
+                            // Get transaction details for notification
+                            val parser = com.pennywiseai.parser.core.bank.BankParserFactory.getParser(sender)
+                            val parsedTransaction = parser?.parse(body, sender, timestamp)
+
+                            if (parsedTransaction != null) {
+                                // Get entry point to access repository
+                                val entryPoint = EntryPointAccessors.fromApplication(
+                                    context.applicationContext,
+                                    SmsBroadcastReceiverEntryPoint::class.java
+                                )
+                                val repository = entryPoint.transactionRepository()
+
+                                // Fetch the saved transaction to get its category
+                                val savedTransaction = repository.getTransactionById(result.transactionId)
+
+                                showTransactionNotification(
+                                    context = context,
+                                    transactionId = result.transactionId,
+                                    amount = parsedTransaction.amount.toString(),
+                                    merchant = parsedTransaction.merchant ?: "Unknown",
+                                    type = parsedTransaction.type.name,
+                                    bankName = parsedTransaction.bankName ?: "Bank",
+                                    category = savedTransaction?.category ?: "Others",
+                                    repository = repository
+                                )
+                            }
                         }
                     }
                 } else {
@@ -247,6 +269,96 @@ class SmsBroadcastReceiver : BroadcastReceiver() {
                 notificationManager.notify(notificationId, notification)
             } catch (e: Exception) {
                 Log.e(TAG, "Error showing notification", e)
+            }
+        }
+    }
+
+    /**
+     * Shows a notification for a pending transaction with Review and Quick Confirm actions.
+     */
+    private fun showPendingTransactionNotification(
+        context: Context,
+        pending: PendingTransactionEntity
+    ) {
+        receiverScope.launch {
+            try {
+                val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+                // Create notification channel for pending transactions
+                val channel = NotificationChannel(
+                    PENDING_CHANNEL_ID,
+                    PENDING_CHANNEL_NAME,
+                    NotificationManager.IMPORTANCE_HIGH
+                ).apply {
+                    description = "Notifications for pending transactions awaiting confirmation"
+                }
+                notificationManager.createNotificationChannel(channel)
+
+                // Create intent to review pending transaction
+                val reviewIntent = Intent(context, MainActivity::class.java).apply {
+                    action = ACTION_REVIEW_PENDING
+                    putExtra(EXTRA_PENDING_ID, pending.id)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                }
+
+                val reviewPendingIntent = PendingIntent.getActivity(
+                    context,
+                    pending.id.toInt(),
+                    reviewIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+
+                // Create intent for Quick Confirm action
+                val quickConfirmIntent = Intent(context, PendingTransactionActionReceiver::class.java).apply {
+                    action = ACTION_QUICK_CONFIRM
+                    putExtra(EXTRA_PENDING_ID, pending.id)
+                }
+
+                val quickConfirmPendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    pending.id.toInt() + 1000, // Unique request code
+                    quickConfirmIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+
+                // Format notification content
+                val typeEmoji = when (pending.transactionType.name) {
+                    "EXPENSE" -> "💸"
+                    "INCOME" -> "💰"
+                    "CREDIT" -> "💳"
+                    "TRANSFER" -> "🔄"
+                    "INVESTMENT" -> "📈"
+                    else -> "💵"
+                }
+
+                val currencySymbol = com.pennywiseai.tracker.utils.CurrencyFormatter.getCurrencySymbol(pending.currency)
+                val title = "$typeEmoji $currencySymbol${pending.amount.toPlainString()} - ${pending.merchantName}"
+                val content = "${pending.category} • ${pending.bankName ?: "Bank"} • Tap to review"
+
+                // Build notification with actions
+                val notification = NotificationCompat.Builder(context, PENDING_CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setContentTitle(title)
+                    .setContentText(content)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setContentIntent(reviewPendingIntent)
+                    .setAutoCancel(true)
+                    .addAction(
+                        0,
+                        "Review",
+                        reviewPendingIntent
+                    )
+                    .addAction(
+                        0,
+                        "Quick Confirm",
+                        quickConfirmPendingIntent
+                    )
+                    .build()
+
+                notificationManager.notify(pending.id.toInt() + 10000, notification)
+                Log.d(TAG, "Shown pending transaction notification for ID: ${pending.id}")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error showing pending notification", e)
             }
         }
     }

@@ -5,6 +5,7 @@ import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Pending
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class BottomNavItem(
@@ -17,13 +18,19 @@ sealed class BottomNavItem(
         title = "Home",
         icon = Icons.Default.Home
     )
-    
+
+    data object Pending : BottomNavItem(
+        route = "pending",
+        title = "Pending",
+        icon = Icons.Default.Pending
+    )
+
     data object Analytics : BottomNavItem(
         route = "analytics",
         title = "Analytics",
         icon = Icons.Default.Analytics
     )
-    
+
     data object Chat : BottomNavItem(
         route = "chat",
         title = "Chat",

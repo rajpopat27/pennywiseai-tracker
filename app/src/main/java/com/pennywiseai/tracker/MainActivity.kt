@@ -19,6 +19,10 @@ class MainActivity : FragmentActivity() {
     var editTransactionId by mutableStateOf<Long?>(null)
         private set
 
+    // Pending transaction ID to review when launched from notification
+    var reviewPendingId by mutableStateOf<Long?>(null)
+        private set
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // Install splash screen before super.onCreate()
         installSplashScreen()
@@ -27,12 +31,14 @@ class MainActivity : FragmentActivity() {
         enableEdgeToEdge()
 
         // Handle intent if activity is launched from notification
-        handleEditIntent(intent)
+        handleIntent(intent)
 
         setContent {
             PennyWiseApp(
                 editTransactionId = editTransactionId,
-                onEditComplete = { editTransactionId = null }
+                onEditComplete = { editTransactionId = null },
+                reviewPendingId = reviewPendingId,
+                onPendingReviewComplete = { reviewPendingId = null }
             )
         }
     }
@@ -40,14 +46,22 @@ class MainActivity : FragmentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         // Handle intent when activity is already running
-        handleEditIntent(intent)
+        handleIntent(intent)
     }
 
-    private fun handleEditIntent(intent: Intent?) {
-        if (intent?.action == SmsBroadcastReceiver.ACTION_EDIT_TRANSACTION) {
-            val transactionId = intent.getLongExtra(SmsBroadcastReceiver.EXTRA_TRANSACTION_ID, -1)
-            if (transactionId != -1L) {
-                editTransactionId = transactionId
+    private fun handleIntent(intent: Intent?) {
+        when (intent?.action) {
+            SmsBroadcastReceiver.ACTION_EDIT_TRANSACTION -> {
+                val transactionId = intent.getLongExtra(SmsBroadcastReceiver.EXTRA_TRANSACTION_ID, -1)
+                if (transactionId != -1L) {
+                    editTransactionId = transactionId
+                }
+            }
+            SmsBroadcastReceiver.ACTION_REVIEW_PENDING -> {
+                val pendingId = intent.getLongExtra(SmsBroadcastReceiver.EXTRA_PENDING_ID, -1)
+                if (pendingId != -1L) {
+                    reviewPendingId = pendingId
+                }
             }
         }
     }

@@ -15,6 +15,7 @@ import com.pennywiseai.tracker.data.database.dao.RuleApplicationDao
 import com.pennywiseai.tracker.data.database.dao.RuleDao
 import com.pennywiseai.tracker.data.database.dao.SubscriptionDao
 import com.pennywiseai.tracker.data.database.dao.TransactionDao
+import com.pennywiseai.tracker.data.database.dao.PendingTransactionDao
 import com.pennywiseai.tracker.data.database.dao.UnrecognizedSmsDao
 import dagger.Module
 import dagger.Provides
@@ -203,6 +204,18 @@ object DatabaseModule {
     @Singleton
     fun provideExchangeRateDao(database: PennyWiseDatabase): ExchangeRateDao {
         return database.exchangeRateDao()
+    }
+
+    /**
+     * Provides the PendingTransactionDao from the database.
+     *
+     * @param database The PennyWiseDatabase instance
+     * @return PendingTransactionDao for accessing pending transaction data
+     */
+    @Provides
+    @Singleton
+    fun providePendingTransactionDao(database: PennyWiseDatabase): PendingTransactionDao {
+        return database.pendingTransactionDao()
     }
 }
 

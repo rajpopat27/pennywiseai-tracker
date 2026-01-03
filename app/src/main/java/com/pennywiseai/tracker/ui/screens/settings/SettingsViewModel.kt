@@ -75,6 +75,12 @@ class SettingsViewModel @Inject constructor(
     // SMS scan period state
     val smsScanMonths = userPreferencesRepository.smsScanMonths
     val smsScanAllTime = userPreferencesRepository.smsScanAllTime
+
+    // Transaction confirmation state
+    val isTransactionConfirmationEnabled = userPreferencesRepository.isTransactionConfirmationEnabled
+
+    // Bypass confirmation for scans state
+    val isBypassConfirmationForScans = userPreferencesRepository.isBypassConfirmationForScansEnabled
     
     // Unrecognized SMS state
     val unreportedSmsCount = unrecognizedSmsRepository.getUnreportedCount()
@@ -361,6 +367,18 @@ class SettingsViewModel @Inject constructor(
     fun toggleDeveloperMode(enabled: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.setDeveloperModeEnabled(enabled)
+        }
+    }
+
+    fun toggleTransactionConfirmation(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setTransactionConfirmationEnabled(enabled)
+        }
+    }
+
+    fun toggleBypassConfirmationForScans(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setBypassConfirmationForScans(enabled)
         }
     }
     

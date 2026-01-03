@@ -1,6 +1,7 @@
 package com.pennywiseai.tracker.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -15,11 +16,21 @@ import com.pennywiseai.tracker.ui.theme.Spacing
 fun PennyWiseCard(
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.medium,
-    colors: CardColors = CardDefaults.cardColors(),
-    elevation: CardElevation = CardDefaults.cardElevation(),
+    colors: CardColors = CardDefaults.cardColors(
+        containerColor = MaterialTheme.colorScheme.surface
+    ),
+    elevation: CardElevation = CardDefaults.cardElevation(
+        defaultElevation = if (isSystemInDarkTheme()) 0.dp else 2.dp
+    ),
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val cardBorder = if (isSystemInDarkTheme()) {
+        BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+    } else {
+        null
+    }
+
     if (onClick != null) {
         Card(
             onClick = onClick,
@@ -28,7 +39,8 @@ fun PennyWiseCard(
                 .padding(horizontal = Spacing.md, vertical = Spacing.xs),
             shape = shape,
             colors = colors,
-            elevation = elevation
+            elevation = elevation,
+            border = cardBorder
         ) {
             Column(
                 modifier = Modifier.padding(Spacing.md)
@@ -43,7 +55,8 @@ fun PennyWiseCard(
                 .padding(horizontal = Spacing.md, vertical = Spacing.xs),
             shape = shape,
             colors = colors,
-            elevation = elevation
+            elevation = elevation,
+            border = cardBorder
         ) {
             Column(
                 modifier = Modifier.padding(Spacing.md)

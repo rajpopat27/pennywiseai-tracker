@@ -5,12 +5,17 @@ import android.app.Application
 import android.os.Bundle
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.pennywiseai.tracker.data.repository.AppLockRepository
+import com.pennywiseai.tracker.worker.PendingTransactionAutoSaveWorker
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -42,6 +47,25 @@ class PennyWiseApplication : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         registerActivityLifecycleCallbacks(AppLockLifecycleObserver())
+        schedulePendingTransactionAutoSaveWork()
+    }
+
+    /**
+     * Schedule periodic work to auto-save expired pending transactions.
+     * Runs every hour to check for transactions that have been pending for more than 24 hours.
+     */
+    private fun schedulePendingTransactionAutoSaveWork() {
+        val autoSaveRequest = PeriodicWorkRequestBuilder<PendingTransactionAutoSaveWorker>(
+            1, TimeUnit.HOURS
+        )
+            .addTag("pending_transaction_auto_save")
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            PendingTransactionAutoSaveWorker.WORK_NAME,
+            ExistingPeriodicWorkPolicy.KEEP,
+            autoSaveRequest
+        )
     }
 
     /**

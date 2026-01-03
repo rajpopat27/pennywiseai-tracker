@@ -47,3 +47,9 @@ object Rules
 
 @Serializable
 data class CreateRule(val ruleId: String? = null)
+
+@Serializable
+object PendingTransactions
+
+@Serializable
+data class PendingTransactionReview(val pendingId: Long)

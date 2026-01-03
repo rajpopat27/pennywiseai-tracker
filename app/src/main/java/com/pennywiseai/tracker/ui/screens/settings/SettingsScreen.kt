@@ -4,9 +4,12 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.compose.animation.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
@@ -22,6 +25,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -56,6 +62,8 @@ fun SettingsScreen(
     val downloadedMB by settingsViewModel.downloadedMB.collectAsStateWithLifecycle()
     val totalMB by settingsViewModel.totalMB.collectAsStateWithLifecycle()
     val isDeveloperModeEnabled by settingsViewModel.isDeveloperModeEnabled.collectAsStateWithLifecycle(initialValue = false)
+    val isTransactionConfirmationEnabled by settingsViewModel.isTransactionConfirmationEnabled.collectAsStateWithLifecycle(initialValue = true)
+    val isBypassConfirmationForScans by settingsViewModel.isBypassConfirmationForScans.collectAsStateWithLifecycle(initialValue = true)
     val smsScanMonths by settingsViewModel.smsScanMonths.collectAsStateWithLifecycle(initialValue = 3)
     val smsScanAllTime by settingsViewModel.smsScanAllTime.collectAsStateWithLifecycle(initialValue = false)
     val importExportMessage by settingsViewModel.importExportMessage.collectAsStateWithLifecycle()
@@ -92,29 +100,82 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(Dimensions.Padding.content),
-            verticalArrangement = Arrangement.spacedBy(Spacing.md)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
-            // Theme Settings Section
-            SectionHeader(title = "Appearance")
-        
-        PennyWiseCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(Dimensions.Padding.content),
-                verticalArrangement = Arrangement.spacedBy(Spacing.md)
-            ) {
-                // Theme Mode Selection
-                Column {
-                    Text(
-                        text = "Theme",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium
+            // Gradient Header
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                                MaterialTheme.colorScheme.background
+                            )
+                        )
                     )
-                    Spacer(modifier = Modifier.height(Spacing.xs))
-                
+                    .padding(horizontal = 16.dp, vertical = 20.dp)
+            ) {
+                Text(
+                    text = "Settings",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+
+            // Appearance Section
+            SectionHeader(title = "Appearance")
+
+            PennyWiseCard(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Palette,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Column {
+                            Text(
+                                text = "Theme",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = when (themeUiState.isDarkTheme) {
+                                    null -> "System default"
+                                    true -> "Dark mode"
+                                    false -> "Light mode"
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(Spacing.md))
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
@@ -138,45 +199,58 @@ fun SettingsScreen(
                         modifier = Modifier.weight(1f)
                     )
                 }
-                }
             }
-        }
 
-        // Security Section
-        SectionHeader(title = "Security")
+            // Security Section
+            SectionHeader(title = "Security")
 
-        PennyWiseCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(Dimensions.Padding.content),
-                verticalArrangement = Arrangement.spacedBy(Spacing.md)
+            PennyWiseCard(
+                modifier = Modifier.fillMaxWidth()
             ) {
-                // App Lock Toggle
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "App Lock",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Text(
-                            text = if (appLockUiState.canUseBiometric) {
-                                "Protect your data with biometric authentication"
-                            } else {
-                                appLockUiState.biometricCapability.getErrorMessage()
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = if (appLockUiState.canUseBiometric) {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            } else {
-                                MaterialTheme.colorScheme.error
-                            }
-                        )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "App Lock",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = if (appLockUiState.canUseBiometric) {
+                                    "Protect with biometric authentication"
+                                } else {
+                                    appLockUiState.biometricCapability.getErrorMessage()
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (appLockUiState.canUseBiometric) {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                } else {
+                                    MaterialTheme.colorScheme.error
+                                }
+                            )
+                        }
                     }
                     Switch(
                         checked = appLockUiState.isLockEnabled,
@@ -190,8 +264,7 @@ fun SettingsScreen(
                 // Lock Timeout Setting (only show if app lock is enabled)
                 AnimatedVisibility(visible = appLockUiState.isLockEnabled) {
                     Column {
-                        HorizontalDivider()
-                        Spacer(modifier = Modifier.height(Spacing.md))
+                        HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.sm))
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -202,14 +275,14 @@ fun SettingsScreen(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = "Lock Timeout",
-                                    style = MaterialTheme.typography.bodyLarge,
+                                    style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.Medium
                                 )
                                 Text(
                                     text = when (appLockUiState.timeoutMinutes) {
-                                        0 -> "Lock immediately when app goes to background"
-                                        1 -> "Lock after 1 minute in background"
-                                        else -> "Lock after ${appLockUiState.timeoutMinutes} minutes in background"
+                                        0 -> "Lock immediately"
+                                        1 -> "Lock after 1 minute"
+                                        else -> "Lock after ${appLockUiState.timeoutMinutes} minutes"
                                     },
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -224,320 +297,247 @@ fun SettingsScreen(
                     }
                 }
             }
-        }
 
-        // Data Management Section
-        SectionHeader(title = "Data Management")
-        
-        // Manage Accounts
-        PennyWiseCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onNavigateToManageAccounts() }
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(Dimensions.Padding.content),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        Icons.Default.AccountBalance,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Column {
-                        Text(
-                            text = "Manage Accounts",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Text(
-                            text = "Add manual accounts and update balances",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-                Icon(
-                    Icons.Default.ChevronRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-        
-        // Categories
-        PennyWiseCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onNavigateToCategories() }
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(Dimensions.Padding.content),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        Icons.Default.Category,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Column {
-                        Text(
-                            text = "Categories",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Text(
-                            text = "Manage expense and income categories",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-                Icon(
-                    Icons.Default.ChevronRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
+            // Data Management Section
+            SectionHeader(title = "Data Management")
 
-        // Smart Rules
-        PennyWiseCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onNavigateToRules() }
-        ) {
-            Row(
+            // Manage Accounts
+            SettingsNavigationItem(
+                icon = Icons.Default.AccountBalance,
+                title = "Manage Accounts",
+                subtitle = "Add manual accounts and update balances",
+                onClick = onNavigateToManageAccounts
+            )
+
+            // Categories
+            SettingsNavigationItem(
+                icon = Icons.Default.Category,
+                title = "Categories",
+                subtitle = "Manage expense and income categories",
+                onClick = onNavigateToCategories
+            )
+
+            // Smart Rules
+            SettingsNavigationItem(
+                icon = Icons.Default.AutoAwesome,
+                title = "Smart Rules",
+                subtitle = "Automatic transaction categorization",
+                onClick = onNavigateToRules
+            )
+
+            // Export Data
+            SettingsNavigationItem(
+                icon = Icons.Default.Upload,
+                title = "Export Data",
+                subtitle = "Backup all data to a file",
+                onClick = { settingsViewModel.exportBackup() }
+            )
+
+            // Import Data
+            SettingsNavigationItem(
+                icon = Icons.Default.Download,
+                title = "Import Data",
+                subtitle = "Restore data from backup",
+                onClick = { importLauncher.launch("*/*") }
+            )
+
+            // SMS Scan Period
+            PennyWiseCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(Dimensions.Padding.content),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        Icons.Default.AutoAwesome,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Column {
-                        Text(
-                            text = "Smart Rules",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Text(
-                            text = "Automatic transaction categorization",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-                Icon(
-                    Icons.Default.ChevronRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-        
-        // Export Data
-        PennyWiseCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { settingsViewModel.exportBackup() }
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(Dimensions.Padding.content),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        Icons.Default.Upload,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Column {
-                        Text(
-                            text = "Export Data",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Text(
-                            text = "Backup all data to a file",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-                Icon(
-                    Icons.Default.ChevronRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-        
-        // Import Data
-        PennyWiseCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { 
-                    importLauncher.launch("*/*")
-                }
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(Dimensions.Padding.content),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        Icons.Default.Download,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Column {
-                        Text(
-                            text = "Import Data",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Text(
-                            text = "Restore data from backup",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-                Icon(
-                    Icons.Default.ChevronRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-        
-        // SMS Scan Period
-        PennyWiseCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { showSmsScanDialog = true }
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(Dimensions.Padding.content),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.md),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        Icons.Default.Schedule,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Column {
-                        Text(
-                            text = "SMS Scan Period",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Text(
-                            text = if (smsScanAllTime) "Scan all SMS messages" else "Scan last $smsScanMonths months of messages",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-                Text(
-                    text = if (smsScanAllTime) "All Time" else "$smsScanMonths months",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-        
-        // AI Features Section
-        SectionHeader(title = "AI Features")
-        
-        PennyWiseCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(Dimensions.Padding.content),
-                verticalArrangement = Arrangement.spacedBy(Spacing.md)
+                    .clickable { showSmsScanDialog = true }
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "AI Chat Assistant",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Text(
-                            text = when (downloadState) {
-                                DownloadState.NOT_DOWNLOADED -> "Download Qwen 2.5 model (${Constants.ModelDownload.MODEL_SIZE_MB} MB)"
-                                DownloadState.DOWNLOADING -> "Downloading Qwen model..."
-                                DownloadState.PAUSED -> "Download interrupted"
-                                DownloadState.COMPLETED -> "Qwen ready for chat"
-                                DownloadState.FAILED -> "Download failed"
-                                DownloadState.ERROR_INSUFFICIENT_SPACE -> "Not enough storage space"
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Schedule,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Column {
+                            Text(
+                                text = "SMS Scan Period",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = if (smsScanAllTime) "Scan all SMS messages" else "Scan last $smsScanMonths months",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    Text(
+                        text = if (smsScanAllTime) "All Time" else "$smsScanMonths months",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            // Transaction Confirmation Toggle
+            PennyWiseCard(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Verified,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = "Transaction Confirmation",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = if (isTransactionConfirmationEnabled)
+                                        "Review transactions before saving"
+                                    else
+                                        "Transactions saved automatically",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        Switch(
+                            checked = isTransactionConfirmationEnabled,
+                            onCheckedChange = { settingsViewModel.toggleTransactionConfirmation(it) }
                         )
                     }
-                    
-                    // Action area based on state
+
+                    // Bypass Confirmation for Scans - only show when confirmation is enabled
+                    AnimatedVisibility(visible = isTransactionConfirmationEnabled) {
+                        Column {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = Spacing.sm),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "Skip Confirmation for Scans",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    Text(
+                                        text = if (isBypassConfirmationForScans)
+                                            "SMS scans save directly"
+                                        else
+                                            "SMS scans go to pending",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                Switch(
+                                    checked = isBypassConfirmationForScans,
+                                    onCheckedChange = { settingsViewModel.toggleBypassConfirmationForScans(it) }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // AI Features Section
+            SectionHeader(title = "AI Features")
+
+            PennyWiseCard(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.SmartToy,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "AI Chat Assistant",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = when (downloadState) {
+                                    DownloadState.NOT_DOWNLOADED -> "Download model (${Constants.ModelDownload.MODEL_SIZE_MB} MB)"
+                                    DownloadState.DOWNLOADING -> "Downloading..."
+                                    DownloadState.PAUSED -> "Download interrupted"
+                                    DownloadState.COMPLETED -> "Ready for chat"
+                                    DownloadState.FAILED -> "Download failed"
+                                    DownloadState.ERROR_INSUFFICIENT_SPACE -> "Not enough space"
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
                     when (downloadState) {
                         DownloadState.NOT_DOWNLOADED -> {
                             Button(
                                 onClick = { settingsViewModel.startModelDownload() }
                             ) {
-                                Icon(Icons.Default.Download, contentDescription = null)
-                                Spacer(modifier = Modifier.width(Spacing.xs))
+                                Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
                                 Text("Download")
                             }
                         }
@@ -549,12 +549,15 @@ fun SettingsScreen(
                                 color = MaterialTheme.colorScheme.primary
                             )
                         }
-                        DownloadState.PAUSED -> {
+                        DownloadState.PAUSED, DownloadState.FAILED -> {
                             Button(
-                                onClick = { settingsViewModel.startModelDownload() }
+                                onClick = { settingsViewModel.startModelDownload() },
+                                colors = if (downloadState == DownloadState.FAILED) {
+                                    ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                                } else ButtonDefaults.buttonColors()
                             ) {
-                                Icon(Icons.Default.Download, contentDescription = null)
-                                Spacer(modifier = Modifier.width(Spacing.xs))
+                                Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
                                 Text("Retry")
                             }
                         }
@@ -569,23 +572,9 @@ fun SettingsScreen(
                                     tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(24.dp)
                                 )
-                                TextButton(
-                                    onClick = { settingsViewModel.deleteModel() }
-                                ) {
+                                TextButton(onClick = { settingsViewModel.deleteModel() }) {
                                     Text("Delete")
                                 }
-                            }
-                        }
-                        DownloadState.FAILED -> {
-                            Button(
-                                onClick = { settingsViewModel.startModelDownload() },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.error
-                                )
-                            ) {
-                                Icon(Icons.Default.Refresh, contentDescription = null)
-                                Spacer(modifier = Modifier.width(Spacing.xs))
-                                Text("Retry")
                             }
                         }
                         DownloadState.ERROR_INSUFFICIENT_SPACE -> {
@@ -598,217 +587,278 @@ fun SettingsScreen(
                         }
                     }
                 }
-                
-                // Progress details during download
+
                 AnimatedVisibility(
                     visible = downloadState == DownloadState.DOWNLOADING,
                     enter = expandVertically() + fadeIn(),
                     exit = shrinkVertically() + fadeOut()
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = Spacing.md),
                         verticalArrangement = Arrangement.spacedBy(Spacing.sm)
                     ) {
                         LinearProgressIndicator(
                             progress = { downloadProgress / 100f },
                             modifier = Modifier.fillMaxWidth()
                         )
-                        
-                        Row(
+                        Text(
+                            text = "$downloadedMB MB / $totalMB MB",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Button(
+                            onClick = { settingsViewModel.cancelDownload() },
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                         ) {
+                            Icon(Icons.Default.Cancel, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Cancel")
+                        }
+                    }
+                }
+
+                if (downloadState == DownloadState.NOT_DOWNLOADED || downloadState == DownloadState.ERROR_INSUFFICIENT_SPACE) {
+                    Spacer(modifier = Modifier.height(Spacing.sm))
+                    Text(
+                        text = "Chat with AI about your expenses. All data stays private on your device.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            // Unrecognized Messages Section (only show if count > 0)
+            val unreportedCount by settingsViewModel.unreportedSmsCount.collectAsStateWithLifecycle()
+
+            if (unreportedCount > 0) {
+                SectionHeader(title = "Help Improve PennyWise")
+
+                PennyWiseCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        Log.d("SettingsScreen", "Navigating to UnrecognizedSms screen")
+                        onNavigateToUnrecognizedSms()
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.tertiaryContainer),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Warning,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = "Unrecognized Bank Messages",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = "$unreportedCount message${if (unreportedCount > 1) "s" else ""} from potential banks",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Badge(containerColor = MaterialTheme.colorScheme.primary) {
+                                Text(unreportedCount.toString())
+                            }
+                            Icon(
+                                Icons.Default.ChevronRight,
+                                contentDescription = "View Messages",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Developer Section
+            SectionHeader(title = "Developer")
+
+            PennyWiseCard(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Code,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "$downloadedMB MB / $totalMB MB",
+                                text = "Developer Mode",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "Show technical information in chat",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        
-                        Button(
-                            onClick = { settingsViewModel.cancelDownload() },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error
-                            )
-                        ) {
-                            Icon(Icons.Default.Cancel, contentDescription = null)
-                            Spacer(modifier = Modifier.width(Spacing.xs))
-                            Text("Cancel Download")
-                        }
                     }
-                }
-                
-                // Info about AI features
-                if (downloadState == DownloadState.NOT_DOWNLOADED || 
-                    downloadState == DownloadState.ERROR_INSUFFICIENT_SPACE) {
-                    HorizontalDivider()
-                    Text(
-                        text = "Chat with Qwen AI about your expenses and get financial insights. " +
-                              "All conversations stay private on your device.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    Switch(
+                        checked = isDeveloperModeEnabled,
+                        onCheckedChange = { settingsViewModel.toggleDeveloperMode(it) }
                     )
                 }
             }
-        }
-        
-        // Unrecognized Messages Section (only show if count > 0)
-        val unreportedCount by settingsViewModel.unreportedSmsCount.collectAsStateWithLifecycle()
-        
-        if (unreportedCount > 0) {
-            SectionHeader(title = "Help Improve PennyWise")
-            
+
+            // Support Section
+            SectionHeader(title = "Support & Community")
+
             PennyWiseCard(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = { 
-                    Log.d("SettingsScreen", "Navigating to UnrecognizedSms screen")
-                    onNavigateToUnrecognizedSms() 
-                }
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(Dimensions.Padding.content),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Unrecognized Bank Messages",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Text(
-                            text = "$unreportedCount message${if (unreportedCount > 1) "s" else ""} from potential banks",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    
+                Column {
+                    // Help & FAQ
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onNavigateToFaq() }
+                            .padding(vertical = Spacing.sm),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Badge(
-                            containerColor = MaterialTheme.colorScheme.primary
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
                         ) {
-                            Text(unreportedCount.toString())
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.Help,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = "Help & FAQ",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = "Frequently asked questions",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
-                        
                         Icon(
                             Icons.Default.ChevronRight,
-                            contentDescription = "View Messages",
+                            contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                }
-            }
-        }
-        
-        // Developer Section
-        SectionHeader(title = "Developer")
-        
-        PennyWiseCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(Dimensions.Padding.content),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Developer Mode",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = "Show technical information in chat",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Switch(
-                    checked = isDeveloperModeEnabled,
-                    onCheckedChange = { settingsViewModel.toggleDeveloperMode(it) }
-                )
-            }
-        }
-        
-        // Support Section
-        SectionHeader(title = "Support & Community")
-        
-        val context = LocalContext.current
-        
-        PennyWiseCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column {
-                // Help & FAQ
-                ListItem(
-                    headlineContent = { 
-                        Text(
-                            text = "Help & FAQ",
-                            fontWeight = FontWeight.Medium
-                        )
-                    },
-                    supportingContent = { 
-                        Text("Frequently asked questions and help")
-                    },
-                    leadingContent = {
-                        Icon(
-                            Icons.AutoMirrored.Filled.Help,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    },
-                    trailingContent = {
-                        Icon(
-                            Icons.Default.ChevronRight,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    },
-                    modifier = Modifier.clickable { onNavigateToFaq() }
-                )
-                
-                HorizontalDivider()
-                
-                // GitHub Issues
-                ListItem(
-                    headlineContent = { 
-                        Text(
-                            text = "Report an Issue",
-                            fontWeight = FontWeight.Medium
-                        )
-                    },
-                    supportingContent = { 
-                        Text("Submit bug reports or bank requests on GitHub")
-                    },
-                    leadingContent = {
-                        Icon(
-                            Icons.Default.BugReport,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    },
-                    trailingContent = {
+
+                    HorizontalDivider(modifier = Modifier.padding(start = 56.dp))
+
+                    // GitHub Issues
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/sarim2000/pennywiseai-tracker/issues/new/choose"))
+                                context.startActivity(intent)
+                            }
+                            .padding(vertical = Spacing.sm),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.BugReport,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = "Report an Issue",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = "Submit bug reports on GitHub",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                         Icon(
                             Icons.AutoMirrored.Filled.OpenInNew,
                             contentDescription = null,
                             modifier = Modifier.size(20.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                    },
-                    modifier = Modifier.clickable {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/sarim2000/pennywiseai-tracker/issues/new/choose"))
-                        context.startActivity(intent)
                     }
-                )
+                }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 
@@ -1023,5 +1073,62 @@ fun SettingsScreen(
             }
         )
     }
+}
+
+@Composable
+private fun SettingsNavigationItem(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit
+) {
+    PennyWiseCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(Spacing.md),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Column {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            Icon(
+                Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
+    }
 }

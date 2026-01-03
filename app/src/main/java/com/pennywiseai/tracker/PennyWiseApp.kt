@@ -29,7 +29,9 @@ fun PennyWiseApp(
     themeViewModel: ThemeViewModel = hiltViewModel(),
     appLockViewModel: AppLockViewModel = hiltViewModel(),
     editTransactionId: Long? = null,
-    onEditComplete: () -> Unit = {}
+    onEditComplete: () -> Unit = {},
+    reviewPendingId: Long? = null,
+    onPendingReviewComplete: () -> Unit = {}
 ) {
     val themeUiState by themeViewModel.themeUiState.collectAsStateWithLifecycle()
     val appLockUiState by appLockViewModel.uiState.collectAsStateWithLifecycle()
@@ -87,6 +89,14 @@ fun PennyWiseApp(
     LaunchedEffect(editTransactionId) {
         editTransactionId?.let { transactionId ->
             navController.navigate(com.pennywiseai.tracker.navigation.TransactionDetail(transactionId))
+        }
+    }
+
+    // Navigate to pending transaction review when reviewPendingId changes
+    LaunchedEffect(reviewPendingId) {
+        reviewPendingId?.let { pendingId ->
+            navController.navigate(com.pennywiseai.tracker.navigation.PendingTransactionReview(pendingId))
+            onPendingReviewComplete()
         }
     }
 

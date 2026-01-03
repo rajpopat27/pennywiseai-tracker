@@ -5,10 +5,12 @@ import com.pennywiseai.parser.core.ParsedTransaction
 import com.pennywiseai.parser.core.bank.BankParserFactory
 import com.pennywiseai.tracker.data.database.entity.AccountBalanceEntity
 import com.pennywiseai.tracker.data.database.entity.CardType
+import com.pennywiseai.tracker.data.database.entity.PendingTransactionEntity
 import com.pennywiseai.tracker.data.database.entity.TransactionEntity
 import com.pennywiseai.tracker.data.database.entity.TransactionType
 import com.pennywiseai.tracker.data.mapper.toEntity
 import com.pennywiseai.tracker.data.mapper.toEntityType
+import com.pennywiseai.tracker.data.preferences.UserPreferencesRepository
 import com.pennywiseai.tracker.data.repository.AccountBalanceRepository
 import com.pennywiseai.tracker.data.repository.CardRepository
 import com.pennywiseai.tracker.data.repository.MerchantMappingRepository
@@ -35,7 +37,9 @@ class SmsTransactionProcessor @Inject constructor(
     private val merchantMappingRepository: MerchantMappingRepository,
     private val subscriptionRepository: SubscriptionRepository,
     private val ruleRepository: RuleRepository,
-    private val ruleEngine: RuleEngine
+    private val ruleEngine: RuleEngine,
+    private val pendingTransactionManager: PendingTransactionManager,
+    private val userPreferencesRepository: UserPreferencesRepository
 ) {
     companion object {
         private const val TAG = "SmsTransactionProcessor"
@@ -47,7 +51,9 @@ class SmsTransactionProcessor @Inject constructor(
     data class ProcessingResult(
         val success: Boolean,
         val transactionId: Long? = null,
-        val reason: String? = null
+        val reason: String? = null,
+        val pendingTransaction: PendingTransactionEntity? = null,
+        val requiresConfirmation: Boolean = false
     )
 
     /**
@@ -56,12 +62,14 @@ class SmsTransactionProcessor @Inject constructor(
      * @param sender SMS sender address
      * @param body SMS body text
      * @param timestamp SMS timestamp in milliseconds
+     * @param bypassConfirmation If true, skip confirmation even if enabled (for batch imports)
      * @return ProcessingResult indicating success/failure and transaction ID
      */
     suspend fun processAndSaveTransaction(
         sender: String,
         body: String,
-        timestamp: Long
+        timestamp: Long,
+        bypassConfirmation: Boolean = false
     ): ProcessingResult {
         try {
             // Get the appropriate parser for this sender
@@ -78,11 +86,64 @@ class SmsTransactionProcessor @Inject constructor(
 
             Log.d(TAG, "Parsed transaction: ${parsedTransaction.amount} from ${parsedTransaction.bankName}")
 
-            // Save the transaction
+            // Check if confirmation is enabled and not bypassed
+            val confirmationEnabled = userPreferencesRepository.getTransactionConfirmationEnabled()
+            if (confirmationEnabled && !bypassConfirmation) {
+                return processWithConfirmation(parsedTransaction)
+            }
+
+            // Direct save (confirmation disabled or bypassed)
             return saveParsedTransaction(parsedTransaction, body)
         } catch (e: Exception) {
             Log.e(TAG, "Error processing SMS", e)
             return ProcessingResult(false, reason = e.message)
+        }
+    }
+
+    /**
+     * Processes a transaction with confirmation flow.
+     * Adds to pending queue instead of direct save.
+     */
+    private suspend fun processWithConfirmation(parsedTransaction: ParsedTransaction): ProcessingResult {
+        val result = pendingTransactionManager.addPendingTransaction(parsedTransaction)
+
+        return when (result) {
+            is PendingTransactionManager.AddPendingResult.ShowDialog -> {
+                Log.d(TAG, "Transaction pending confirmation (foreground)")
+                ProcessingResult(
+                    success = true,
+                    reason = "Pending user confirmation",
+                    pendingTransaction = result.pending,
+                    requiresConfirmation = true
+                )
+            }
+            is PendingTransactionManager.AddPendingResult.SavedAsPending -> {
+                Log.d(TAG, "Transaction saved as pending (background)")
+                ProcessingResult(
+                    success = true,
+                    reason = "Saved as pending",
+                    pendingTransaction = result.pending,
+                    requiresConfirmation = true
+                )
+            }
+            is PendingTransactionManager.AddPendingResult.DirectSaved -> {
+                ProcessingResult(
+                    success = true,
+                    transactionId = result.transactionId
+                )
+            }
+            is PendingTransactionManager.AddPendingResult.Duplicate -> {
+                ProcessingResult(
+                    success = false,
+                    reason = result.reason
+                )
+            }
+            is PendingTransactionManager.AddPendingResult.Error -> {
+                ProcessingResult(
+                    success = false,
+                    reason = result.reason
+                )
+            }
         }
     }
 

@@ -45,6 +45,10 @@ class UserPreferencesRepository @Inject constructor(
         val FIRST_LAUNCH_TIME = longPreferencesKey("first_launch_time")
         val HAS_SHOWN_REVIEW_PROMPT = booleanPreferencesKey("has_shown_review_prompt")
         val LAST_REVIEW_PROMPT_TIME = longPreferencesKey("last_review_prompt_time")
+
+        // Transaction Confirmation preferences
+        val TRANSACTION_CONFIRMATION_ENABLED = booleanPreferencesKey("transaction_confirmation_enabled")
+        val BYPASS_CONFIRMATION_FOR_SCANS = booleanPreferencesKey("bypass_confirmation_for_scans")
     }
 
     val userPreferences: Flow<UserPreferences> = context.dataStore.data
@@ -331,6 +335,42 @@ class UserPreferencesRepository @Inject constructor(
         .map { preferences ->
             preferences[PreferencesKeys.LAST_AUTH_TIMESTAMP] ?: 0L
         }
+
+    // Transaction Confirmation methods
+    val isTransactionConfirmationEnabled: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.TRANSACTION_CONFIRMATION_ENABLED] ?: true // Default to enabled
+        }
+
+    suspend fun setTransactionConfirmationEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.TRANSACTION_CONFIRMATION_ENABLED] = enabled
+        }
+    }
+
+    suspend fun getTransactionConfirmationEnabled(): Boolean {
+        return context.dataStore.data
+            .map { preferences -> preferences[PreferencesKeys.TRANSACTION_CONFIRMATION_ENABLED] ?: true }
+            .first()
+    }
+
+    // Bypass Confirmation for Scans methods
+    val isBypassConfirmationForScansEnabled: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.BYPASS_CONFIRMATION_FOR_SCANS] ?: true // Default to bypass (direct save)
+        }
+
+    suspend fun setBypassConfirmationForScans(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.BYPASS_CONFIRMATION_FOR_SCANS] = enabled
+        }
+    }
+
+    suspend fun getBypassConfirmationForScans(): Boolean {
+        return context.dataStore.data
+            .map { preferences -> preferences[PreferencesKeys.BYPASS_CONFIRMATION_FOR_SCANS] ?: true }
+            .first()
+    }
 }
 
 data class UserPreferences(
