@@ -8,7 +8,6 @@ import com.pennywiseai.tracker.data.database.PennyWiseDatabase
 import com.pennywiseai.tracker.data.database.dao.AccountBalanceDao
 import com.pennywiseai.tracker.data.database.dao.CardDao
 import com.pennywiseai.tracker.data.database.dao.CategoryDao
-import com.pennywiseai.tracker.data.database.dao.ChatDao
 import com.pennywiseai.tracker.data.database.dao.ExchangeRateDao
 import com.pennywiseai.tracker.data.database.dao.MerchantMappingDao
 import com.pennywiseai.tracker.data.database.dao.RuleApplicationDao
@@ -50,18 +49,8 @@ object DatabaseModule {
             PennyWiseDatabase::class.java,
             PennyWiseDatabase.DATABASE_NAME
         )
-            // Add manual migrations here when needed
-            .addMigrations(
-                PennyWiseDatabase.MIGRATION_12_14,
-                PennyWiseDatabase.MIGRATION_13_14,
-                PennyWiseDatabase.MIGRATION_14_15,
-                PennyWiseDatabase.MIGRATION_20_21,
-                PennyWiseDatabase.MIGRATION_21_22,
-                PennyWiseDatabase.MIGRATION_22_23
-            )
-
-            // Enable auto-migrations
-            // Room will automatically detect schema changes between versions
+            // For alpha: wipe database on schema changes instead of migrating
+            .fallbackToDestructiveMigration()
 
             // Add callback to seed default data on first creation
             .addCallback(DatabaseCallback())
@@ -96,18 +85,6 @@ object DatabaseModule {
     @Singleton
     fun provideSubscriptionDao(database: PennyWiseDatabase): SubscriptionDao {
         return database.subscriptionDao()
-    }
-    
-    /**
-     * Provides the ChatDao from the database.
-     * 
-     * @param database The PennyWiseDatabase instance
-     * @return ChatDao for accessing chat message data
-     */
-    @Provides
-    @Singleton
-    fun provideChatDao(database: PennyWiseDatabase): ChatDao {
-        return database.chatDao()
     }
     
     /**

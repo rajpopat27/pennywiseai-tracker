@@ -99,8 +99,7 @@ class BackupImporter @Inject constructor(
                 database.subscriptionDao().deleteAllSubscriptions()
                 database.merchantMappingDao().deleteAllMappings()
                 database.unrecognizedSmsDao().deleteAll()
-                database.chatDao().deleteAllMessages()
-                
+
                 // Import all data
                 backup.database.categories.forEach { category ->
                     database.categoryDao().insertCategory(category)
@@ -131,11 +130,7 @@ class BackupImporter @Inject constructor(
                 backup.database.unrecognizedSms.forEach { sms ->
                     database.unrecognizedSmsDao().insert(sms)
                 }
-                
-                backup.database.chatMessages.forEach { message ->
-                    database.chatDao().insertMessage(message)
-                }
-                
+
                 // Import preferences
                 importPreferences(backup.preferences)
                 

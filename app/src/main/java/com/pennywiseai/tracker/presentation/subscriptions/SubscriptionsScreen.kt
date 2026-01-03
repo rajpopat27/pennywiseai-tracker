@@ -141,9 +141,7 @@ private fun TotalSubscriptionsSummary(
         amount = CurrencyFormatter.formatCurrency(totalAmount),
         subtitle = "$activeCount active subscription${if (activeCount != 1) "s" else ""}",
         amountColor = amountColor,
-        containerColor = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
-        )
+        containerColor = MaterialTheme.colorScheme.secondaryContainer
     )
 }
 
@@ -196,20 +194,14 @@ private fun SwipeableSubscriptionItem(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(Spacing.sm)
             ) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(enabled = !subscription.smsBody.isNullOrBlank()) {
-                            showSmsBody = !showSmsBody
-                        },
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
+                PennyWiseCard(
+                    onClick = if (!subscription.smsBody.isNullOrBlank()) {
+                        { showSmsBody = !showSmsBody }
+                    } else null,
+                    outerPadding = false
                 ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(Dimensions.Padding.content),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(Spacing.md),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -313,16 +305,12 @@ private fun SwipeableSubscriptionItem(
                 
                 // SMS Body Display (expandable)
                 if (showSmsBody && !subscription.smsBody.isNullOrBlank()) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
+                    PennyWiseCard(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        outerPadding = false
                     ) {
                         Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(Dimensions.Padding.content)
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically

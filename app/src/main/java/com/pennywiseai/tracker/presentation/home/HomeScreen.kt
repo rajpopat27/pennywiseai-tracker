@@ -73,6 +73,7 @@ import com.pennywiseai.tracker.data.database.entity.SubscriptionEntity
 import com.pennywiseai.tracker.data.database.entity.TransactionEntity
 import com.pennywiseai.tracker.data.database.entity.TransactionType
 import com.pennywiseai.tracker.ui.components.BrandIcon
+import com.pennywiseai.tracker.ui.components.FloatingPillSegmentedButton
 import com.pennywiseai.tracker.core.Constants
 import com.pennywiseai.tracker.ui.theme.*
 import com.pennywiseai.tracker.ui.components.SummaryCard
@@ -784,126 +785,35 @@ private fun AccountsCarousel(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun IncomeExpenseFilterTabs(
     selectedFilter: TransactionFilterType,
     onFilterSelected: (TransactionFilterType) -> Unit
 ) {
-    val isIncomeSelected = selectedFilter == TransactionFilterType.INCOME
-    val isExpenseSelected = selectedFilter == TransactionFilterType.EXPENSE
+    val options = listOf("All", "Income", "Expense")
+    val selectedIndex = when (selectedFilter) {
+        TransactionFilterType.ALL -> 0
+        TransactionFilterType.INCOME -> 1
+        TransactionFilterType.EXPENSE -> 2
+    }
 
-    Row(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.Center
+            .padding(horizontal = Spacing.md, vertical = Spacing.sm)
     ) {
-        // Pill-shaped container
-        Surface(
-            modifier = Modifier.height(44.dp),
-            shape = RoundedCornerShape(50),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        ) {
-            Row(
-                modifier = Modifier.padding(4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Income segment
-                Surface(
-                    onClick = {
-                        onFilterSelected(
-                            if (isIncomeSelected) TransactionFilterType.ALL
-                            else TransactionFilterType.INCOME
-                        )
-                    },
-                    modifier = Modifier.fillMaxHeight(),
-                    shape = RoundedCornerShape(50),
-                    color = if (isIncomeSelected) {
-                        if (isSystemInDarkTheme()) MaterialTheme.colorScheme.secondaryContainer
-                        else MaterialTheme.colorScheme.surface
-                    } else {
-                        Color.Transparent
-                    },
-                    shadowElevation = if (isIncomeSelected) 4.dp else 0.dp
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .padding(horizontal = 24.dp),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowDownward,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = if (isIncomeSelected) {
-                                MaterialTheme.colorScheme.onSurface
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            }
-                        )
-                        Text(
-                            text = "Income",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = if (isIncomeSelected) {
-                                MaterialTheme.colorScheme.onSurface
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            }
-                        )
-                    }
+        FloatingPillSegmentedButton(
+            options = options,
+            selectedIndex = selectedIndex,
+            onOptionSelected = { index ->
+                when (index) {
+                    0 -> onFilterSelected(TransactionFilterType.ALL)
+                    1 -> onFilterSelected(TransactionFilterType.INCOME)
+                    2 -> onFilterSelected(TransactionFilterType.EXPENSE)
                 }
-
-                // Expense segment
-                Surface(
-                    onClick = {
-                        onFilterSelected(
-                            if (isExpenseSelected) TransactionFilterType.ALL
-                            else TransactionFilterType.EXPENSE
-                        )
-                    },
-                    modifier = Modifier.fillMaxHeight(),
-                    shape = RoundedCornerShape(50),
-                    color = if (isExpenseSelected) {
-                        if (isSystemInDarkTheme()) MaterialTheme.colorScheme.secondaryContainer
-                        else MaterialTheme.colorScheme.surface
-                    } else {
-                        Color.Transparent
-                    },
-                    shadowElevation = if (isExpenseSelected) 4.dp else 0.dp
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .padding(horizontal = 24.dp),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowUpward,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = if (isExpenseSelected) {
-                                MaterialTheme.colorScheme.onSurface
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            }
-                        )
-                        Text(
-                            text = "Expense",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = if (isExpenseSelected) {
-                                MaterialTheme.colorScheme.onSurface
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            }
-                        )
-                    }
-                }
-            }
-        }
+            },
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 

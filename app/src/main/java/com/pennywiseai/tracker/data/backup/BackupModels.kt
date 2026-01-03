@@ -104,10 +104,7 @@ data class DatabaseSnapshot(
     val merchantMappings: List<MerchantMappingEntity>,
     
     @SerializedName("unrecognized_sms")
-    val unrecognizedSms: List<UnrecognizedSmsEntity>,
-    
-    @SerializedName("chat_messages")
-    val chatMessages: List<ChatMessage>
+    val unrecognizedSms: List<UnrecognizedSmsEntity> = emptyList()
 )
 
 /**

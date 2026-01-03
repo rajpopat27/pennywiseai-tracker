@@ -46,7 +46,7 @@ fun CategoryEditDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(Dimensions.Padding.content),
-            shape = RoundedCornerShape(28.dp)
+            shape = RoundedCornerShape(16.dp)
         ) {
             Column(
                 modifier = Modifier

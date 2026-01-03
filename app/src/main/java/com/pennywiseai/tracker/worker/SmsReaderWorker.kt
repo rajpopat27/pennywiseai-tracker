@@ -18,7 +18,6 @@ import com.pennywiseai.tracker.data.mapper.toEntity
 import com.pennywiseai.tracker.data.mapper.toEntityType
 import com.pennywiseai.tracker.data.repository.AccountBalanceRepository
 import com.pennywiseai.tracker.data.repository.CardRepository
-import com.pennywiseai.tracker.data.repository.LlmRepository
 import com.pennywiseai.tracker.data.repository.MerchantMappingRepository
 import com.pennywiseai.tracker.data.repository.SubscriptionRepository
 import com.pennywiseai.tracker.data.repository.TransactionRepository
@@ -52,7 +51,6 @@ class SmsReaderWorker @AssistedInject constructor(
     private val subscriptionRepository: SubscriptionRepository,
     private val accountBalanceRepository: AccountBalanceRepository,
     private val cardRepository: CardRepository,
-    private val llmRepository: LlmRepository,
     private val merchantMappingRepository: MerchantMappingRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
     private val unrecognizedSmsRepository: UnrecognizedSmsRepository,
@@ -561,17 +559,7 @@ class SmsReaderWorker @AssistedInject constructor(
             }
             
             Log.d(TAG, "SMS parsing completed. Parsed: $parsedCount, Saved: $savedCount, Subscriptions: $subscriptionCount")
-            
-            // Update system prompt with new financial data if any transactions were saved
-            if (savedCount > 0) {
-                try {
-                    llmRepository.updateSystemPrompt()
-                    Log.d(TAG, "Updated system prompt with latest financial data")
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error updating system prompt: ${e.message}")
-                }
-            }
-            
+
             Result.success()
         } catch (e: Exception) {
             Log.e(TAG, "Error in SMS parsing work", e)

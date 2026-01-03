@@ -1,45 +1,19 @@
 package com.pennywiseai.tracker.ui.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.pennywiseai.tracker.ui.theme.Dimensions
 import com.pennywiseai.tracker.ui.theme.Spacing
-
-/**
- * Base card component with consistent styling
- */
-@Composable
-fun PennyWiseCard(
-    modifier: Modifier = Modifier,
-    containerColor: CardColors = CardDefaults.cardColors(
-        containerColor = MaterialTheme.colorScheme.surface
-    ),
-    onClick: (() -> Unit)? = null,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    if (onClick != null) {
-        Card(
-            modifier = modifier,
-            onClick = onClick,
-            colors = containerColor
-        ) {
-            content()
-        }
-    } else {
-        Card(
-            modifier = modifier,
-            colors = containerColor
-        ) {
-            content()
-        }
-    }
-}
 
 /**
  * Summary card for displaying large amounts with optional subtitle
@@ -51,21 +25,17 @@ fun SummaryCard(
     amount: String,
     subtitle: String? = null,
     modifier: Modifier = Modifier,
-    containerColor: CardColors = CardDefaults.cardColors(
-        containerColor = MaterialTheme.colorScheme.primaryContainer
-    ),
-    amountColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onPrimaryContainer,
+    containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
+    amountColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
     onClick: (() -> Unit)? = null
 ) {
     PennyWiseCard(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier,
         containerColor = containerColor,
         onClick = onClick
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Dimensions.Padding.card),
+            modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -95,6 +65,7 @@ fun SummaryCard(
 
 /**
  * List item card for transactions, subscriptions, etc.
+ * Uses the unified PennyWiseCard styling.
  */
 @Composable
 fun ListItemCard(
@@ -102,26 +73,24 @@ fun ListItemCard(
     subtitle: String,
     amount: String,
     modifier: Modifier = Modifier,
-    amountColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface,
+    amountColor: Color = MaterialTheme.colorScheme.onSurface,
     leadingContent: @Composable (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit)? = null,
     onClick: (() -> Unit)? = null
 ) {
     PennyWiseCard(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier,
         onClick = onClick
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Dimensions.Padding.content),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (leadingContent != null) {
                 leadingContent()
                 Spacer(modifier = Modifier.width(Spacing.md))
             }
-            
+
             Column(
                 modifier = Modifier.weight(1f)
             ) {
@@ -136,7 +105,7 @@ fun ListItemCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            
+
             if (trailingContent != null) {
                 trailingContent()
             } else {
@@ -161,7 +130,14 @@ fun SectionHeader(
     action: @Composable (() -> Unit)? = null
 ) {
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(
+                start = Spacing.md,
+                end = Spacing.md,
+                top = Spacing.md,
+                bottom = Spacing.xs
+            ),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {

@@ -23,7 +23,6 @@ import com.pennywiseai.tracker.data.mapper.toEntityType
 import com.pennywiseai.tracker.data.preferences.UserPreferencesRepository
 import com.pennywiseai.tracker.data.repository.AccountBalanceRepository
 import com.pennywiseai.tracker.data.repository.CardRepository
-import com.pennywiseai.tracker.data.repository.LlmRepository
 import com.pennywiseai.tracker.data.repository.MerchantMappingRepository
 import com.pennywiseai.tracker.data.repository.SubscriptionRepository
 import com.pennywiseai.tracker.data.repository.TransactionRepository
@@ -64,7 +63,6 @@ class OptimizedSmsReaderWorker @AssistedInject constructor(
     private val subscriptionRepository: SubscriptionRepository,
     private val accountBalanceRepository: AccountBalanceRepository,
     private val cardRepository: CardRepository,
-    private val llmRepository: LlmRepository,
     private val merchantMappingRepository: MerchantMappingRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
     private val unrecognizedSmsRepository: UnrecognizedSmsRepository,
@@ -242,16 +240,6 @@ class OptimizedSmsReaderWorker @AssistedInject constructor(
                 Log.d(TAG, "Cleaned up old unrecognized SMS entries")
             } catch (e: Exception) {
                 Log.e(TAG, "Error cleaning up unrecognized SMS: ${e.message}")
-            }
-
-            // Update system prompt with new financial data if any transactions were saved
-            if (stats.savedTransactions > 0) {
-                try {
-                    llmRepository.updateSystemPrompt()
-                    Log.d(TAG, "Updated system prompt with latest financial data")
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error updating system prompt: ${e.message}")
-                }
             }
 
             // Report final progress

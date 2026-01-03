@@ -65,7 +65,6 @@ class BackupExporter @Inject constructor(
         val subscriptions = database.subscriptionDao().getAllSubscriptions().first()
         val merchantMappings = database.merchantMappingDao().getAllMappings().first()
         val unrecognizedSms = database.unrecognizedSmsDao().getAllUnrecognizedSms().first()
-        val chatMessages = database.chatDao().getAllMessages().first()
         
         // Get preferences from repository
         val prefs = userPreferencesRepository.userPreferences.first()
@@ -122,8 +121,7 @@ class BackupExporter @Inject constructor(
                 accountBalances = accountBalances,
                 subscriptions = subscriptions,
                 merchantMappings = merchantMappings,
-                unrecognizedSms = if (privacy == ExportPrivacy.FULL) unrecognizedSms else emptyList(),
-                chatMessages = if (privacy == ExportPrivacy.FULL) chatMessages else emptyList()
+                unrecognizedSms = if (privacy == ExportPrivacy.FULL) unrecognizedSms else emptyList()
             ),
             preferences = PreferencesSnapshot(
                 theme = ThemePreferences(

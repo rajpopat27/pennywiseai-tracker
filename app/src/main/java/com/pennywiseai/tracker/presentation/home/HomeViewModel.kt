@@ -17,7 +17,6 @@ import com.pennywiseai.tracker.data.manager.InAppUpdateManager
 import com.pennywiseai.tracker.data.manager.InAppReviewManager
 import com.pennywiseai.tracker.data.currency.CurrencyConversionService
 import com.pennywiseai.tracker.data.repository.AccountBalanceRepository
-import com.pennywiseai.tracker.data.repository.LlmRepository
 import com.pennywiseai.tracker.data.repository.SubscriptionRepository
 import com.pennywiseai.tracker.data.repository.TransactionRepository
 import com.pennywiseai.tracker.worker.OptimizedSmsReaderWorker
@@ -37,17 +36,16 @@ class HomeViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val subscriptionRepository: SubscriptionRepository,
     private val accountBalanceRepository: AccountBalanceRepository,
-    private val llmRepository: LlmRepository,
     private val currencyConversionService: CurrencyConversionService,
     private val inAppUpdateManager: InAppUpdateManager,
     private val inAppReviewManager: InAppReviewManager,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
-    
+
     private val sharedPrefs = context.getSharedPreferences("account_prefs", Context.MODE_PRIVATE)
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
-    
+
     private val _deletedTransaction = MutableStateFlow<TransactionEntity?>(null)
     val deletedTransaction: StateFlow<TransactionEntity?> = _deletedTransaction.asStateFlow()
 
@@ -58,11 +56,11 @@ class HomeViewModel @Inject constructor(
     // Store currency breakdown maps for quick access when switching currencies
     private var currentMonthBreakdownMap: Map<String, TransactionRepository.MonthlyBreakdown> = emptyMap()
     private var lastMonthBreakdownMap: Map<String, TransactionRepository.MonthlyBreakdown> = emptyMap()
-    
+
     init {
         loadHomeData()
     }
-    
+
     private fun loadHomeData() {
         viewModelScope.launch {
             // Load current month breakdown by currency
@@ -70,13 +68,13 @@ class HomeViewModel @Inject constructor(
                 updateBreakdownForSelectedCurrency(breakdownByCurrency, isCurrentMonth = true)
             }
         }
-        
+
         viewModelScope.launch {
             // Load account balances
             accountBalanceRepository.getAllLatestBalances().collect { allBalances ->
                 // Get hidden accounts from SharedPreferences
                 val hiddenAccounts = sharedPrefs.getStringSet("hidden_accounts", emptySet()) ?: emptySet()
-                
+
                 // Filter out hidden accounts
                 val balances = allBalances.filter { account ->
                     val key = "${account.bankName}_${account.accountLast4}"
@@ -85,10 +83,10 @@ class HomeViewModel @Inject constructor(
                 // Separate credit cards from regular accounts (hide zero balance accounts)
                 val regularAccounts = balances.filter { !it.isCreditCard && it.balance != BigDecimal.ZERO }
                 val creditCards = balances.filter { it.isCreditCard }
-                
+
                 // Account loading completed
                 Log.d("HomeViewModel", "Loaded ${balances.size} account(s)")
-                
+
                 // Check if we have multiple currencies and refresh exchange rates if needed
                 val accountCurrencies = regularAccounts.map { it.currency }.distinct()
                 val hasMultipleCurrencies = accountCurrencies.size > 1
@@ -134,7 +132,7 @@ class HomeViewModel @Inject constructor(
                 )
             }
         }
-        
+
         viewModelScope.launch {
             // Load current month transactions by type (currency-filtered)
             val now = java.time.LocalDate.now()
@@ -148,14 +146,14 @@ class HomeViewModel @Inject constructor(
                 updateTransactionTypeTotals(transactions)
             }
         }
-        
+
         viewModelScope.launch {
             // Load last month breakdown by currency
             transactionRepository.getLastMonthBreakdownByCurrency().collect { breakdownByCurrency ->
                 updateBreakdownForSelectedCurrency(breakdownByCurrency, isCurrentMonth = false)
             }
         }
-        
+
         viewModelScope.launch {
             // Load recent transactions (last 3)
             transactionRepository.getRecentTransactions(limit = 3).collect { transactions ->
@@ -165,7 +163,7 @@ class HomeViewModel @Inject constructor(
                 )
             }
         }
-        
+
         viewModelScope.launch {
             // Load all active subscriptions
             subscriptionRepository.getActiveSubscriptions().collect { subscriptions ->
@@ -177,45 +175,45 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-    
+
     private fun calculateMonthlyChange() {
         val currentExpenses = _uiState.value.currentMonthExpenses
         val lastExpenses = _uiState.value.lastMonthExpenses
         val currentTotal = _uiState.value.currentMonthTotal
         val lastTotal = _uiState.value.lastMonthTotal
-        
+
         // Calculate expense change for simple comparison
         val expenseChange = currentExpenses - lastExpenses
         val totalChange = currentTotal - lastTotal
-        
+
         _uiState.value = _uiState.value.copy(
             monthlyChange = totalChange,
             monthlyChangePercent = 0 // We're not using percentage anymore
         )
     }
-    
+
     fun refreshHiddenAccounts() {
         viewModelScope.launch {
             // Force re-read of hidden accounts from SharedPreferences
             val hiddenAccounts = sharedPrefs.getStringSet("hidden_accounts", emptySet()) ?: emptySet()
-            
+
             // Re-fetch all accounts and filter
             accountBalanceRepository.getAllLatestBalances().first().let { allBalances ->
                 val visibleBalances = allBalances.filter { account ->
                     val key = "${account.bankName}_${account.accountLast4}"
                     !hiddenAccounts.contains(key)
                 }
-                
+
                 // Separate credit cards from regular accounts (hide zero balance accounts)
                 val regularAccounts = visibleBalances.filter { !it.isCreditCard && it.balance != BigDecimal.ZERO }
                 val creditCards = visibleBalances.filter { it.isCreditCard }
-                
+
                 // Update UI state
                 _uiState.value = _uiState.value.copy(
                     accountBalances = regularAccounts,
                     creditCards = creditCards,
                     totalBalance = regularAccounts.sumOf { it.balance },
-                    totalAvailableCredit = creditCards.sumOf { 
+                    totalAvailableCredit = creditCards.sumOf {
                         // Available = Credit Limit - Outstanding Balance
                         (it.creditLimit ?: BigDecimal.ZERO) - it.balance
                     }
@@ -223,7 +221,7 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-    
+
     /**
      * Scans SMS messages for transactions.
      * @param forceResync If true, performs a full resync from scratch, reprocessing all SMS messages.
@@ -364,25 +362,15 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-    
-    fun updateSystemPrompt() {
-        viewModelScope.launch {
-            try {
-                llmRepository.updateSystemPrompt()
-            } catch (e: Exception) {
-                // Handle error silently or add error state if needed
-            }
-        }
-    }
-    
+
     fun showBreakdownDialog() {
         _uiState.value = _uiState.value.copy(showBreakdownDialog = true)
     }
-    
+
     fun hideBreakdownDialog() {
         _uiState.value = _uiState.value.copy(showBreakdownDialog = false)
     }
-    
+
     /**
      * Checks for app updates using Google Play In-App Updates.
      * Should be called with the current activity context.
@@ -397,14 +385,14 @@ class HomeViewModel @Inject constructor(
     ) {
         inAppUpdateManager.checkForUpdate(activity, snackbarHostState, scope)
     }
-    
+
     fun deleteTransaction(transaction: TransactionEntity) {
         viewModelScope.launch {
             _deletedTransaction.value = transaction
             transactionRepository.deleteTransaction(transaction)
         }
     }
-    
+
     fun undoDelete() {
         _deletedTransaction.value?.let { transaction ->
             viewModelScope.launch {
@@ -413,17 +401,17 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-    
+
     fun undoDeleteTransaction(transaction: TransactionEntity) {
         viewModelScope.launch {
             transactionRepository.undoDeleteTransaction(transaction)
         }
     }
-    
+
     fun clearDeletedTransaction() {
         _deletedTransaction.value = null
     }
-    
+
     /**
      * Checks if eligible for in-app review and shows if appropriate.
      * Should be called with the current activity context.
@@ -435,7 +423,7 @@ class HomeViewModel @Inject constructor(
             inAppReviewManager.checkAndShowReviewIfEligible(activity, transactionCount)
         }
     }
-    
+
     fun selectCurrency(currency: String) {
         // Update monthly breakdown values from stored maps
         val availableCurrencies = _uiState.value.availableCurrencies
