@@ -100,6 +100,7 @@ fun HomeScreen(
     onNavigateToTransactionsWithSearch: () -> Unit = {},
     onNavigateToSubscriptions: () -> Unit = {},
     onNavigateToAddScreen: () -> Unit = {},
+    onNavigateToAnalytics: () -> Unit = {},
     onTransactionClick: (Long) -> Unit = {},
     onFabPositioned: (Rect) -> Unit = {}
 ) {
@@ -233,6 +234,8 @@ fun HomeScreen(
             item {
                 ReferenceBalanceCard(
                     totalBalance = uiState.totalBalance,
+                    income = uiState.currentMonthIncome,
+                    expense = uiState.currentMonthExpenses,
                     currency = uiState.selectedCurrency,
                     availableCurrencies = uiState.availableCurrencies,
                     onCurrencySelected = { viewModel.selectCurrency(it) }
@@ -261,18 +264,13 @@ fun HomeScreen(
             // Transaction History Header
             item {
                 ReferenceTransactionHistoryHeader(
-                    onViewAll = onNavigateToTransactions,
-                    onCalendarClick = { /* TODO: Date filter */ },
-                    onSortClick = { /* TODO: Sort */ }
+                    onFilterClick = onNavigateToAnalytics
                 )
             }
 
-            // Income/Expense Tabbed Card
+            // Income/Expense Filter Tabs
             item {
-                IncomeExpenseTabbedCard(
-                    income = uiState.currentMonthIncome,
-                    expense = uiState.currentMonthExpenses,
-                    currency = uiState.selectedCurrency,
+                IncomeExpenseFilterTabs(
                     selectedFilter = selectedFilter,
                     onFilterSelected = { selectedFilter = it }
                 )
@@ -395,59 +393,164 @@ fun HomeScreen(
 @Composable
 private fun ReferenceBalanceCard(
     totalBalance: BigDecimal,
+    income: BigDecimal,
+    expense: BigDecimal,
     currency: String,
     availableCurrencies: List<String>,
     onCurrencySelected: (String) -> Unit
 ) {
-    Card(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSystemInDarkTheme()) 0.dp else 4.dp
-        ),
-        border = if (isSystemInDarkTheme()) {
-            BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
-        } else null
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.Start // Left aligned
+        // Currency Selector (if multiple currencies)
+        if (availableCurrencies.size > 1) {
+            ExpenzioMinimalCurrencySelector(
+                selectedCurrency = currency,
+                availableCurrencies = availableCurrencies,
+                onCurrencySelected = onCurrencySelected
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        // "Total Balance" label - plain text, not in card
+        Text(
+            text = "Total Balance",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // Large Balance Amount - plain text, not in card
+        Text(
+            text = CurrencyFormatter.formatCurrency(totalBalance, currency),
+            style = MaterialTheme.typography.displaySmall.copy(
+                fontWeight = FontWeight.Bold,
+                fontSize = 36.sp
+            ),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Income and Expense Cards
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Currency Selector (if multiple currencies)
-            if (availableCurrencies.size > 1) {
-                ExpenzioMinimalCurrencySelector(
-                    selectedCurrency = currency,
-                    availableCurrencies = availableCurrencies,
-                    onCurrencySelected = onCurrencySelected
-                )
-                Spacer(modifier = Modifier.height(16.dp))
+            // Income Card
+            Card(
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = if (isSystemInDarkTheme()) 0.dp else 2.dp
+                ),
+                border = if (isSystemInDarkTheme()) {
+                    BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                } else null
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Icon with circular background
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(
+                                (if (!isSystemInDarkTheme()) income_light else income_dark).copy(alpha = 0.15f)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDownward,
+                            contentDescription = null,
+                            tint = if (!isSystemInDarkTheme()) income_light else income_dark,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Column {
+                        Text(
+                            text = "Income",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = CurrencyFormatter.formatCurrency(income, currency),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
             }
 
-            // "Total Balance" label
-            Text(
-                text = "Total Balance",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Large Balance Amount
-            Text(
-                text = CurrencyFormatter.formatCurrency(totalBalance, currency),
-                style = MaterialTheme.typography.displaySmall.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 36.sp
+            // Expense Card
+            Card(
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
                 ),
-                color = MaterialTheme.colorScheme.onSurface
-            )
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = if (isSystemInDarkTheme()) 0.dp else 2.dp
+                ),
+                border = if (isSystemInDarkTheme()) {
+                    BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                } else null
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Icon with circular background
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(
+                                (if (!isSystemInDarkTheme()) expense_light else expense_dark).copy(alpha = 0.15f)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowUpward,
+                            contentDescription = null,
+                            tint = if (!isSystemInDarkTheme()) expense_light else expense_dark,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Column {
+                        Text(
+                            text = "Expenses",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = CurrencyFormatter.formatCurrency(expense, currency),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -455,7 +558,7 @@ private fun ReferenceBalanceCard(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun AccountsCarousel(
-    creditCards: List<com.pennywiseai.tracker.data.database.entity.CardEntity>,
+    creditCards: List<com.pennywiseai.tracker.data.database.entity.AccountBalanceEntity>,
     bankAccounts: List<com.pennywiseai.tracker.data.database.entity.AccountBalanceEntity>,
     selectedCurrency: String,
     onAccountClick: (String, String) -> Unit
@@ -473,29 +576,29 @@ private fun AccountsCarousel(
     val allAccounts = remember(creditCards, bankAccounts) {
         val items = mutableListOf<AccountItem>()
 
-        // Add credit cards
+        // Add credit cards (which are actually AccountBalanceEntity with isCreditCard = true)
         creditCards.forEach { card ->
             items.add(
                 AccountItem(
                     bankName = card.bankName,
-                    accountLast4 = card.cardLast4,
-                    balance = card.availableCredit ?: BigDecimal.ZERO,
+                    accountLast4 = card.accountLast4,
+                    balance = card.balance,
                     isCredit = true,
                     creditLimit = card.creditLimit,
-                    currency = selectedCurrency
+                    currency = card.currency
                 )
             )
         }
 
-        // Add bank accounts
-        bankAccounts.forEach { account ->
+        // Add bank accounts (non-credit accounts)
+        bankAccounts.filter { !it.isCreditCard }.forEach { account ->
             items.add(
                 AccountItem(
                     bankName = account.bankName,
                     accountLast4 = account.accountLast4,
                     balance = account.balance,
-                    isCredit = account.isCreditCard,
-                    creditLimit = account.creditLimit,
+                    isCredit = false,
+                    creditLimit = null,
                     currency = account.currency
                 )
             )
@@ -681,45 +784,32 @@ private fun AccountsCarousel(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun IncomeExpenseTabbedCard(
-    income: BigDecimal,
-    expense: BigDecimal,
-    currency: String,
+private fun IncomeExpenseFilterTabs(
     selectedFilter: TransactionFilterType,
     onFilterSelected: (TransactionFilterType) -> Unit
 ) {
-    Card(
+    val isIncomeSelected = selectedFilter == TransactionFilterType.INCOME
+    val isExpenseSelected = selectedFilter == TransactionFilterType.EXPENSE
+
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSystemInDarkTheme()) 0.dp else 2.dp
-        ),
-        border = if (isSystemInDarkTheme()) {
-            BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
-        } else null
+        horizontalArrangement = Arrangement.Center
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+        // Pill-shaped container
+        Surface(
+            modifier = Modifier.height(44.dp),
+            shape = RoundedCornerShape(50),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         ) {
-            // Tab row
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                    .padding(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                modifier = Modifier.padding(4.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Income tab
-                val isIncomeSelected = selectedFilter == TransactionFilterType.INCOME
+                // Income segment
                 Surface(
                     onClick = {
                         onFilterSelected(
@@ -727,20 +817,21 @@ private fun IncomeExpenseTabbedCard(
                             else TransactionFilterType.INCOME
                         )
                     },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxHeight(),
+                    shape = RoundedCornerShape(50),
                     color = if (isIncomeSelected) {
-                        MaterialTheme.colorScheme.surface
+                        if (isSystemInDarkTheme()) MaterialTheme.colorScheme.secondaryContainer
+                        else MaterialTheme.colorScheme.surface
                     } else {
                         Color.Transparent
                     },
-                    shadowElevation = if (isIncomeSelected) 2.dp else 0.dp
+                    shadowElevation = if (isIncomeSelected) 4.dp else 0.dp
                 ) {
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 12.dp),
-                        horizontalArrangement = Arrangement.Center,
+                            .fillMaxHeight()
+                            .padding(horizontal = 24.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
@@ -748,18 +839,16 @@ private fun IncomeExpenseTabbedCard(
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
                             tint = if (isIncomeSelected) {
-                                if (!isSystemInDarkTheme()) income_light else income_dark
+                                MaterialTheme.colorScheme.onSurface
                             } else {
                                 MaterialTheme.colorScheme.onSurfaceVariant
                             }
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "Income",
                             style = MaterialTheme.typography.labelLarge,
-                            fontWeight = if (isIncomeSelected) FontWeight.SemiBold else FontWeight.Medium,
                             color = if (isIncomeSelected) {
-                                if (!isSystemInDarkTheme()) income_light else income_dark
+                                MaterialTheme.colorScheme.onSurface
                             } else {
                                 MaterialTheme.colorScheme.onSurfaceVariant
                             }
@@ -767,8 +856,7 @@ private fun IncomeExpenseTabbedCard(
                     }
                 }
 
-                // Expense tab
-                val isExpenseSelected = selectedFilter == TransactionFilterType.EXPENSE
+                // Expense segment
                 Surface(
                     onClick = {
                         onFilterSelected(
@@ -776,20 +864,21 @@ private fun IncomeExpenseTabbedCard(
                             else TransactionFilterType.EXPENSE
                         )
                     },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxHeight(),
+                    shape = RoundedCornerShape(50),
                     color = if (isExpenseSelected) {
-                        MaterialTheme.colorScheme.surface
+                        if (isSystemInDarkTheme()) MaterialTheme.colorScheme.secondaryContainer
+                        else MaterialTheme.colorScheme.surface
                     } else {
                         Color.Transparent
                     },
-                    shadowElevation = if (isExpenseSelected) 2.dp else 0.dp
+                    shadowElevation = if (isExpenseSelected) 4.dp else 0.dp
                 ) {
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 12.dp),
-                        horizontalArrangement = Arrangement.Center,
+                            .fillMaxHeight()
+                            .padding(horizontal = 24.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
@@ -797,97 +886,19 @@ private fun IncomeExpenseTabbedCard(
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
                             tint = if (isExpenseSelected) {
-                                if (!isSystemInDarkTheme()) expense_light else expense_dark
+                                MaterialTheme.colorScheme.onSurface
                             } else {
                                 MaterialTheme.colorScheme.onSurfaceVariant
                             }
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "Expense",
                             style = MaterialTheme.typography.labelLarge,
-                            fontWeight = if (isExpenseSelected) FontWeight.SemiBold else FontWeight.Medium,
                             color = if (isExpenseSelected) {
-                                if (!isSystemInDarkTheme()) expense_light else expense_dark
+                                MaterialTheme.colorScheme.onSurface
                             } else {
                                 MaterialTheme.colorScheme.onSurfaceVariant
                             }
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Amount display based on selected tab
-            val displayAmount = when (selectedFilter) {
-                TransactionFilterType.INCOME -> income
-                TransactionFilterType.EXPENSE -> expense
-                TransactionFilterType.ALL -> income - expense // Net
-            }
-
-            val displayLabel = when (selectedFilter) {
-                TransactionFilterType.INCOME -> "Total Income"
-                TransactionFilterType.EXPENSE -> "Total Expenses"
-                TransactionFilterType.ALL -> "Net Balance"
-            }
-
-            val displayColor = when (selectedFilter) {
-                TransactionFilterType.INCOME -> if (!isSystemInDarkTheme()) income_light else income_dark
-                TransactionFilterType.EXPENSE -> if (!isSystemInDarkTheme()) expense_light else expense_dark
-                TransactionFilterType.ALL -> if (displayAmount >= BigDecimal.ZERO) {
-                    if (!isSystemInDarkTheme()) income_light else income_dark
-                } else {
-                    if (!isSystemInDarkTheme()) expense_light else expense_dark
-                }
-            }
-
-            Text(
-                text = displayLabel,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = CurrencyFormatter.formatCurrency(displayAmount.abs(), currency),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = displayColor
-            )
-
-            // Show both values when ALL is selected
-            if (selectedFilter == TransactionFilterType.ALL) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column {
-                        Text(
-                            text = "Income",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = CurrencyFormatter.formatCurrency(income, currency),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = if (!isSystemInDarkTheme()) income_light else income_dark
-                        )
-                    }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text(
-                            text = "Expenses",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = CurrencyFormatter.formatCurrency(expense, currency),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = if (!isSystemInDarkTheme()) expense_light else expense_dark
                         )
                     }
                 }
@@ -1015,9 +1026,7 @@ private fun ReferenceTransactionFilterTabs(
 
 @Composable
 private fun ReferenceTransactionHistoryHeader(
-    onViewAll: () -> Unit,
-    onCalendarClick: () -> Unit = {},
-    onSortClick: () -> Unit = {}
+    onFilterClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier
@@ -1040,60 +1049,21 @@ private fun ReferenceTransactionHistoryHeader(
             )
         }
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+        // Filter circular button - opens Analytics
+        Surface(
+            onClick = onFilterClick,
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            modifier = Modifier.size(36.dp)
         ) {
-            // Calendar circular button
-            Surface(
-                onClick = onCalendarClick,
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                modifier = Modifier.size(36.dp)
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
             ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.CalendarMonth,
-                        contentDescription = "Filter by date",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            }
-
-            // Sort circular button
-            Surface(
-                onClick = onSortClick,
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                modifier = Modifier.size(36.dp)
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.FilterList,
-                        contentDescription = "Sort",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            }
-
-            TextButton(onClick = onViewAll) {
-                Text(
-                    text = "See all",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
                 Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    imageVector = Icons.Default.FilterList,
+                    contentDescription = "Filter transactions",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(18.dp)
                 )
             }

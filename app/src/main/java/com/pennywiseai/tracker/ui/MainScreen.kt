@@ -66,7 +66,6 @@ fun MainScreen(
                     "transactions" -> "Transactions"
                     "subscriptions" -> "Subscriptions"
                     "analytics" -> "Analytics"
-                    "chat" -> "PennyWise AI"
                     "settings" -> "Settings"
                     "categories" -> "Categories"
                     "unrecognized_sms" -> "Unrecognized Messages"
@@ -76,7 +75,7 @@ fun MainScreen(
                     "pending" -> "Pending Transactions"
                     else -> "PennyWise"
                 },
-                showBackButton = currentRoute in listOf("chat", "settings", "subscriptions", "transactions", "categories", "unrecognized_sms", "manage_accounts", "add_account", "faq"),
+                showBackButton = currentRoute in listOf("settings", "subscriptions", "transactions", "categories", "unrecognized_sms", "manage_accounts", "add_account", "faq"),
                 showSettingsButton = currentRoute !in listOf("settings", "categories", "unrecognized_sms", "manage_accounts", "add_account", "faq", "pending"),
                 showDiscordButton = currentRoute !in listOf("settings", "categories", "unrecognized_sms", "manage_accounts", "add_account", "faq", "pending"),
                 onBackClick = { navController.popBackStack() },
@@ -97,7 +96,9 @@ fun MainScreen(
         NavHost(
             navController = navController,
             startDestination = "home",
-            modifier = Modifier.padding(paddingValues),
+            modifier = Modifier
+                .padding(paddingValues)
+                .consumeWindowInsets(paddingValues),
             enterTransition = { EnterTransition.None },
             exitTransition = { ExitTransition.None },
             popEnterTransition = { EnterTransition.None },
@@ -124,6 +125,9 @@ fun MainScreen(
                         rootNavController?.navigate(
                             com.pennywiseai.tracker.navigation.AddTransaction
                         )
+                    },
+                    onNavigateToAnalytics = {
+                        navController.navigate("analytics")
                     },
                     onTransactionClick = { transactionId ->
                         rootNavController?.navigate(
@@ -217,7 +221,6 @@ fun MainScreen(
             
             composable("analytics") {
                 com.pennywiseai.tracker.ui.screens.analytics.AnalyticsScreen(
-                    onNavigateToChat = { navController.navigate("chat") },
                     onNavigateToTransactions = { category, merchant, period, currency ->
                         val route = buildString {
                             append("transactions")
@@ -245,16 +248,7 @@ fun MainScreen(
                     }
                 )
             }
-            
-            composable("chat") {
-                com.pennywiseai.tracker.ui.screens.chat.ChatScreen(
-                    modifier = Modifier.imePadding(),
-                    onNavigateToSettings = {
-                        navController.navigate("settings")
-                    }
-                )
-            }
-            
+
             composable("settings") {
                 SettingsScreen(
                     themeViewModel = themeViewModel,
@@ -361,7 +355,7 @@ private fun PennyWiseTopAppBar(
         TopAppBar(
             title = { Text(title) },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f)
+                containerColor = MaterialTheme.colorScheme.background
             ),
             navigationIcon = {
                 if (showBackButton) {

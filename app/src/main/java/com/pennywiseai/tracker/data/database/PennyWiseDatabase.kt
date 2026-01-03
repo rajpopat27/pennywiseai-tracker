@@ -2,7 +2,6 @@ package com.pennywiseai.tracker.data.database
 
 import androidx.room.AutoMigration
 import androidx.room.Database
-import androidx.room.DeleteColumn
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.AutoMigrationSpec
@@ -12,7 +11,6 @@ import com.pennywiseai.tracker.data.database.converter.Converters
 import com.pennywiseai.tracker.data.database.dao.AccountBalanceDao
 import com.pennywiseai.tracker.data.database.dao.CardDao
 import com.pennywiseai.tracker.data.database.dao.CategoryDao
-import com.pennywiseai.tracker.data.database.dao.ChatDao
 import com.pennywiseai.tracker.data.database.dao.ExchangeRateDao
 import com.pennywiseai.tracker.data.database.dao.MerchantMappingDao
 import com.pennywiseai.tracker.data.database.dao.RuleApplicationDao
@@ -24,7 +22,6 @@ import com.pennywiseai.tracker.data.database.dao.UnrecognizedSmsDao
 import com.pennywiseai.tracker.data.database.entity.AccountBalanceEntity
 import com.pennywiseai.tracker.data.database.entity.CardEntity
 import com.pennywiseai.tracker.data.database.entity.CategoryEntity
-import com.pennywiseai.tracker.data.database.entity.ChatMessage
 import com.pennywiseai.tracker.data.database.entity.ExchangeRateEntity
 import com.pennywiseai.tracker.data.database.entity.MerchantMappingEntity
 import com.pennywiseai.tracker.data.database.entity.RuleApplicationEntity
@@ -45,14 +42,10 @@ import com.pennywiseai.tracker.data.database.entity.UnrecognizedSmsEntity
  * @property autoMigrations List of automatic migrations between versions.
  */
 @Database(
-    entities = [TransactionEntity::class, SubscriptionEntity::class, ChatMessage::class, MerchantMappingEntity::class, CategoryEntity::class, AccountBalanceEntity::class, UnrecognizedSmsEntity::class, CardEntity::class, RuleEntity::class, RuleApplicationEntity::class, ExchangeRateEntity::class, PendingTransactionEntity::class],
-    version = 29,
+    entities = [TransactionEntity::class, SubscriptionEntity::class, MerchantMappingEntity::class, CategoryEntity::class, AccountBalanceEntity::class, UnrecognizedSmsEntity::class, CardEntity::class, RuleEntity::class, RuleApplicationEntity::class, ExchangeRateEntity::class, PendingTransactionEntity::class],
+    version = 30,
     exportSchema = true,
     autoMigrations = [
-        AutoMigration(from = 1, to = 2),
-        AutoMigration(from = 2, to = 3),
-        AutoMigration(from = 3, to = 4),
-        AutoMigration(from = 4, to = 5, spec = Migration4To5::class),
         AutoMigration(from = 5, to = 6),
         AutoMigration(from = 6, to = 7),
         AutoMigration(from = 7, to = 8, spec = Migration7To8::class),
@@ -67,7 +60,6 @@ import com.pennywiseai.tracker.data.database.entity.UnrecognizedSmsEntity
         AutoMigration(from = 17, to = 18),
         AutoMigration(from = 18, to = 19),
         AutoMigration(from = 19, to = 20),
-        // Note: v20 to v21 uses manual migration to handle nullable field change
         AutoMigration(from = 23, to = 24),
         AutoMigration(from = 24, to = 25),
         AutoMigration(from = 25, to = 26),
@@ -80,7 +72,6 @@ import com.pennywiseai.tracker.data.database.entity.UnrecognizedSmsEntity
 abstract class PennyWiseDatabase : RoomDatabase() {
     abstract fun transactionDao(): TransactionDao
     abstract fun subscriptionDao(): SubscriptionDao
-    abstract fun chatDao(): ChatDao
     abstract fun merchantMappingDao(): MerchantMappingDao
     abstract fun categoryDao(): CategoryDao
     abstract fun accountBalanceDao(): AccountBalanceDao
@@ -115,7 +106,8 @@ abstract class PennyWiseDatabase : RoomDatabase() {
                         MIGRATION_14_15,
                         MIGRATION_20_21,
                         MIGRATION_21_22,
-                        MIGRATION_22_23
+                        MIGRATION_22_23,
+                        MIGRATION_29_30
                     )
                     .build()
                 INSTANCE = instance
@@ -384,6 +376,16 @@ abstract class PennyWiseDatabase : RoomDatabase() {
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_rule_applications_applied_at ON rule_applications (applied_at)")
             }
         }
+
+        /**
+         * Manual migration from version 29 to 30.
+         * Drops the chat_messages table as chat/AI features are removed.
+         */
+        val MIGRATION_29_30 = object : Migration(29, 30) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP TABLE IF EXISTS chat_messages")
+            }
+        }
     }
     
     /**
@@ -403,19 +405,6 @@ abstract class PennyWiseDatabase : RoomDatabase() {
     //     }
     // }
 }
-
-/**
- * Migration from version 4 to 5.
- * - Removes sessionId column from chat_messages table
- * - Adds isSystemPrompt column to chat_messages table
- */
-@DeleteColumn.Entries(
-    DeleteColumn(
-        tableName = "chat_messages",
-        columnName = "sessionId"
-    )
-)
-class Migration4To5 : AutoMigrationSpec
 
 /**
  * Migration from version 7 to 8.

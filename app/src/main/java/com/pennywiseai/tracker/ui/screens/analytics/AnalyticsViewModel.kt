@@ -20,15 +20,38 @@ class AnalyticsViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val savedStateHandle: androidx.lifecycle.SavedStateHandle
 ) : ViewModel() {
-    
+
     private val _selectedPeriod = MutableStateFlow(TimePeriod.THIS_MONTH)
     val selectedPeriod: StateFlow<TimePeriod> = _selectedPeriod.asStateFlow()
-    
+
     private val _transactionTypeFilter = MutableStateFlow(TransactionTypeFilter.EXPENSE)
     val transactionTypeFilter: StateFlow<TransactionTypeFilter> = _transactionTypeFilter.asStateFlow()
 
     private val _selectedCurrency = MutableStateFlow("INR") // Default to INR
     val selectedCurrency: StateFlow<String> = _selectedCurrency.asStateFlow()
+
+    // Custom filter states
+    private val _merchantFilter = MutableStateFlow<String?>(null)
+    val merchantFilter: StateFlow<String?> = _merchantFilter.asStateFlow()
+
+    private val _amountFilter = MutableStateFlow<AmountFilter?>(null)
+    val amountFilter: StateFlow<AmountFilter?> = _amountFilter.asStateFlow()
+
+    private val _categoryFilter = MutableStateFlow<String?>(null)
+    val categoryFilter: StateFlow<String?> = _categoryFilter.asStateFlow()
+
+    private val _accountFilter = MutableStateFlow<String?>(null)
+    val accountFilter: StateFlow<String?> = _accountFilter.asStateFlow()
+
+    // Available filter options (populated from database)
+    private val _availableCategories = MutableStateFlow<List<String>>(emptyList())
+    val availableCategories: StateFlow<List<String>> = _availableCategories.asStateFlow()
+
+    private val _availableAccounts = MutableStateFlow<List<String>>(emptyList())
+    val availableAccounts: StateFlow<List<String>> = _availableAccounts.asStateFlow()
+
+    private val _availableMerchants = MutableStateFlow<List<String>>(emptyList())
+    val availableMerchants: StateFlow<List<String>> = _availableMerchants.asStateFlow()
 
     // Store custom date range as epoch days to survive process death
     // Stored as Pair<Long, Long> (startEpochDay, endEpochDay) in SavedStateHandle
@@ -194,6 +217,78 @@ class AnalyticsViewModel @Inject constructor(
         _selectedCurrency.value = currency
     }
 
+    // Custom filter setters
+    fun setMerchantFilter(merchant: String?) {
+        _merchantFilter.value = merchant?.takeIf { it.isNotBlank() }
+    }
+
+    fun setAmountFilter(operator: AmountOperator?, value: BigDecimal?) {
+        _amountFilter.value = if (operator != null && value != null) {
+            AmountFilter(operator, value)
+        } else {
+            null
+        }
+    }
+
+    fun setCategoryFilter(category: String?) {
+        _categoryFilter.value = category
+    }
+
+    fun setAccountFilter(account: String?) {
+        _accountFilter.value = account
+    }
+
+    fun clearAllCustomFilters() {
+        _merchantFilter.value = null
+        _amountFilter.value = null
+        _categoryFilter.value = null
+        _accountFilter.value = null
+    }
+
+    // Count of active custom filters
+    val activeCustomFilterCount: StateFlow<Int> = combine(
+        _merchantFilter,
+        _amountFilter,
+        _categoryFilter,
+        _accountFilter
+    ) { merchant, amount, category, account ->
+        listOfNotNull(merchant, amount, category, account).size
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 0
+    )
+
+    // Load available filter options
+    init {
+        loadAvailableFilterOptions()
+    }
+
+    private fun loadAvailableFilterOptions() {
+        viewModelScope.launch {
+            transactionRepository.getAllTransactions().collect { transactions ->
+                // Get unique categories
+                _availableCategories.value = transactions
+                    .mapNotNull { it.category }
+                    .distinct()
+                    .sorted()
+
+                // Get unique bank names (accounts)
+                _availableAccounts.value = transactions
+                    .mapNotNull { it.bankName }
+                    .distinct()
+                    .sorted()
+
+                // Get unique merchants (limit to top 100 for performance)
+                _availableMerchants.value = transactions
+                    .map { it.merchantName }
+                    .distinct()
+                    .sorted()
+                    .take(100)
+            }
+        }
+    }
+
     /**
      * Sets a custom date range filter and switches the period to CUSTOM.
      * Date range is persisted in SavedStateHandle to survive process death.
@@ -260,4 +355,18 @@ data class MerchantData(
     val transactionCount: Int,
     val isSubscription: Boolean
 )
+
+// Amount filter data class
+data class AmountFilter(
+    val operator: AmountOperator,
+    val value: BigDecimal
+)
+
+enum class AmountOperator(val symbol: String, val label: String) {
+    EQUALS("=", "Equals"),
+    GREATER_THAN(">", "Greater than"),
+    LESS_THAN("<", "Less than"),
+    GREATER_THAN_OR_EQUAL(">=", "Greater or equal"),
+    LESS_THAN_OR_EQUAL("<=", "Less or equal")
+}
 

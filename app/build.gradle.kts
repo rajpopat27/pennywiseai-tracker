@@ -175,12 +175,6 @@ dependencies {
     // Kotlin Serialization
     implementation(libs.kotlinx.serialization.json)
 
-    // Ktor for HTTP requests
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.android)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.serialization.kotlinx.json)
-    
     // Gson for backup/restore
     implementation(libs.gson)
     
@@ -206,10 +200,7 @@ dependencies {
     // Hilt WorkManager integration
     implementation(libs.androidx.hilt.work)
     ksp(libs.androidx.hilt.compiler)
-    
-    // MediaPipe for LLM inference
-    implementation(libs.tasks.genai)
-    
+
     // Google Play In-App Updates (only for standard flavor)
     "standardImplementation"(libs.app.update)
     "standardImplementation"(libs.app.update.ktx)

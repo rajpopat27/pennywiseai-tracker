@@ -30,8 +30,7 @@ fun PennyWiseBottomNavigation(
     val items = listOf(
         BottomNavItem.Home,
         BottomNavItem.Pending,
-        BottomNavItem.Analytics,
-        BottomNavItem.Chat
+        BottomNavItem.Analytics
     )
 
     val pendingCount by pendingViewModel.pendingCount.collectAsStateWithLifecycle()
@@ -42,7 +41,7 @@ fun PennyWiseBottomNavigation(
             color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
         )
         NavigationBar(
-            containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f)
+            containerColor = MaterialTheme.colorScheme.background
         ) {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
@@ -69,12 +68,14 @@ fun PennyWiseBottomNavigation(
                     label = { Text(item.title) },
                     selected = currentRoute == item.route,
                     onClick = {
-                        navController.navigate(item.route) {
-                            popUpTo(navController.graph.startDestinationId) {
-                                saveState = true
+                        if (currentRoute != item.route) {
+                            navController.navigate(item.route) {
+                                popUpTo(navController.graph.startDestinationId) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
                             }
-                            launchSingleTop = true
-                            restoreState = true
                         }
                     }
                 )
