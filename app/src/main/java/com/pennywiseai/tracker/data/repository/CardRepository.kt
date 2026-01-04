@@ -163,4 +163,16 @@ class CardRepository @Inject constructor(
             android.util.Log.e("CardRepository", "Card not found for ID: $cardId")
         }
     }
+
+    suspend fun updateDefaultCashback(cardId: Long, cashbackPercent: BigDecimal?) {
+        cardDao.updateDefaultCashback(cardId, cashbackPercent)
+    }
+
+    suspend fun getDefaultCashback(cardId: Long): BigDecimal? {
+        return cardDao.getDefaultCashback(cardId)
+    }
+
+    suspend fun getDefaultCashbackByCard(bankName: String, cardLast4: String): BigDecimal? {
+        return cardDao.getDefaultCashbackByCard(bankName, cardLast4)
+    }
 }

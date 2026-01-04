@@ -570,6 +570,12 @@ private fun TransactionItem(
         }
         add(dateTimeText)
         if (transaction.isRecurring) add("Recurring")
+        // Add cashback info if applicable
+        transaction.cashbackAmount?.let { cashback ->
+            if (cashback > BigDecimal.ZERO) {
+                add("${CurrencyFormatter.formatCurrency(cashback, transaction.currency)} cashback")
+            }
+        }
     }
     
     ListItemCard(

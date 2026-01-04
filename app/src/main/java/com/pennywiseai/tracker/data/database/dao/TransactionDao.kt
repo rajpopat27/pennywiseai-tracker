@@ -169,9 +169,9 @@ interface TransactionDao {
     ): Flow<List<TransactionEntity>>
     
     @Query("""
-        SELECT * FROM transactions 
-        WHERE is_deleted = 0 
-        AND bank_name = :bankName 
+        SELECT * FROM transactions
+        WHERE is_deleted = 0
+        AND bank_name = :bankName
         AND account_number = :accountLast4
         AND date_time BETWEEN :startDate AND :endDate
         ORDER BY date_time DESC
@@ -182,4 +182,28 @@ interface TransactionDao {
         startDate: LocalDateTime,
         endDate: LocalDateTime
     ): Flow<List<TransactionEntity>>
+
+    /**
+     * Updates cashback for transactions that don't already have cashback set.
+     * Only affects EXPENSE and CREDIT transactions for a specific account.
+     * Updates transactions where cashback_amount is NULL or 0.
+     * Matches transactions where:
+     * - bank_name matches (case-insensitive) OR bank_name is NULL
+     * - account_number equals the given value OR is NULL (for same bank)
+     */
+    @Query("""
+        UPDATE transactions
+        SET cashback_percent = :cashbackPercent,
+            cashback_amount = (amount * :cashbackPercent / 100)
+        WHERE is_deleted = 0
+        AND (LOWER(bank_name) = LOWER(:bankName) OR bank_name IS NULL)
+        AND (account_number = :accountLast4 OR account_number IS NULL)
+        AND (transaction_type = 'EXPENSE' OR transaction_type = 'CREDIT')
+        AND (cashback_amount IS NULL OR cashback_amount = 0)
+    """)
+    suspend fun applyRetroactiveCashback(
+        bankName: String,
+        accountLast4: String,
+        cashbackPercent: Double
+    ): Int
 }

@@ -71,7 +71,13 @@ data class TransactionEntity(
     val fromAccount: String? = null,
 
     @ColumnInfo(name = "to_account")
-    val toAccount: String? = null
+    val toAccount: String? = null,
+
+    @ColumnInfo(name = "cashback_percent")
+    val cashbackPercent: BigDecimal? = null,
+
+    @ColumnInfo(name = "cashback_amount")
+    val cashbackAmount: BigDecimal? = null
 )
 
 enum class TransactionType {

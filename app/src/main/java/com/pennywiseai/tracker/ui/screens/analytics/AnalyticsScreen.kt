@@ -168,15 +168,26 @@ fun AnalyticsScreen(
                     topCategory = uiState.topCategory,
                     topCategoryPercentage = uiState.topCategoryPercentage,
                     currency = uiState.currency,
+                    totalCashback = uiState.totalCashback,
                     isLoading = uiState.isLoading
                 )
             }
         }
+
+        // Accounts Overview Section
+        if (uiState.accountBreakdown.isNotEmpty()) {
+            item {
+                AccountsOverviewCard(
+                    accounts = uiState.accountBreakdown,
+                    currency = selectedCurrency
+                )
+            }
+        }
         
-        // Category Breakdown Section
+        // Categories Overview Section
         if (uiState.categoryBreakdown.isNotEmpty()) {
             item {
-                CategoryBreakdownCard(
+                CategoriesOverviewCard(
                     categories = uiState.categoryBreakdown,
                     currency = selectedCurrency,
                     onCategoryClick = { category ->
@@ -300,7 +311,7 @@ private fun MerchantListItem(
             append(" • Subscription")
         }
     }
-    
+
     ListItemCard(
         leadingContent = {
             BrandIcon(
@@ -314,6 +325,233 @@ private fun MerchantListItem(
         amount = CurrencyFormatter.formatCurrency(merchant.amount, currency),
         onClick = onClick
     )
+}
+
+@Composable
+private fun AccountsOverviewCard(
+    accounts: List<AccountData>,
+    currency: String
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+    ) {
+        SectionHeader(title = "Accounts Overview")
+
+        accounts.forEach { account ->
+            AccountOverviewItem(
+                account = account,
+                currency = currency
+            )
+        }
+    }
+}
+
+@Composable
+private fun AccountOverviewItem(
+    account: AccountData,
+    currency: String
+) {
+    val accountDisplay = if (account.accountNumber != null) {
+        "${account.bankName} ••${account.accountNumber}"
+    } else {
+        account.bankName
+    }
+
+    val subtitle = buildString {
+        append("${account.transactionCount} ")
+        append(if (account.transactionCount == 1) "transaction" else "transactions")
+        if (account.cashbackEarned > BigDecimal.ZERO) {
+            append(" • Cashback: ${CurrencyFormatter.formatCurrency(account.cashbackEarned, currency)}")
+        }
+    }
+
+    PennyWiseCard(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.md),
+            verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+        ) {
+            // Account name row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
+                ) {
+                    BrandIcon(
+                        merchantName = account.bankName,
+                        size = 36.dp,
+                        showBackground = true
+                    )
+                    Column {
+                        Text(
+                            text = accountDisplay,
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            )
+
+            // Stats row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                // Total Spent
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = CurrencyFormatter.formatCurrency(account.totalSpent, currency),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Text(
+                        text = "Spent",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                // Total Income
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = CurrencyFormatter.formatCurrency(account.totalIncome, currency),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Income",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                // Cashback
+                if (account.cashbackEarned > BigDecimal.ZERO) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = CurrencyFormatter.formatCurrency(account.cashbackEarned, currency),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.tertiary
+                        )
+                        Text(
+                            text = "Cashback",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CategoriesOverviewCard(
+    categories: List<CategoryData>,
+    currency: String,
+    onCategoryClick: (CategoryData) -> Unit = {}
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+    ) {
+        SectionHeader(title = "Categories Overview")
+
+        PennyWiseCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            ExpandableList(
+                items = categories,
+                visibleItemCount = 5
+            ) { category ->
+                CategoryOverviewItem(
+                    category = category,
+                    currency = currency,
+                    onClick = { onCategoryClick(category) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CategoryOverviewItem(
+    category: CategoryData,
+    currency: String,
+    onClick: () -> Unit = {}
+) {
+    Surface(
+        onClick = onClick,
+        color = MaterialTheme.colorScheme.surface,
+        shape = MaterialTheme.shapes.small
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = Spacing.sm),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+                modifier = Modifier.weight(1f)
+            ) {
+                // Category icon
+                CategoryIcon(
+                    category = category.name,
+                    size = 32.dp
+                )
+                Column {
+                    Text(
+                        text = category.name,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "${category.transactionCount} ${if (category.transactionCount == 1) "transaction" else "transactions"}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            Column(
+                horizontalAlignment = Alignment.End
+            ) {
+                Text(
+                    text = CurrencyFormatter.formatCurrency(category.amount, currency),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                )
+                Text(
+                    text = "${String.format("%.1f", category.percentage)}%",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
 }
 
 @Composable

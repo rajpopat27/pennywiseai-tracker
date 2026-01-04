@@ -4,6 +4,7 @@ import androidx.room.*
 import com.pennywiseai.tracker.data.database.entity.CardEntity
 import com.pennywiseai.tracker.data.database.entity.CardType
 import kotlinx.coroutines.flow.Flow
+import java.math.BigDecimal
 
 @Dao
 interface CardDao {
@@ -76,4 +77,13 @@ interface CardDao {
     
     @Query("DELETE FROM cards")
     suspend fun deleteAllCards()
+
+    @Query("UPDATE cards SET default_cashback_percent = :cashbackPercent WHERE id = :cardId")
+    suspend fun updateDefaultCashback(cardId: Long, cashbackPercent: BigDecimal?)
+
+    @Query("SELECT default_cashback_percent FROM cards WHERE id = :cardId")
+    suspend fun getDefaultCashback(cardId: Long): BigDecimal?
+
+    @Query("SELECT default_cashback_percent FROM cards WHERE bank_name = :bankName AND card_last4 = :cardLast4")
+    suspend fun getDefaultCashbackByCard(bankName: String, cardLast4: String): BigDecimal?
 }

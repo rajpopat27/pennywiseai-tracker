@@ -42,7 +42,8 @@ interface AccountBalanceDao {
             ab1.sms_source,
             ab1.source_type,
             ab1.account_type,
-            ab1.currency
+            ab1.currency,
+            ab1.default_cashback_percent
         FROM account_balances ab1
         INNER JOIN (
             SELECT bank_name, account_last4, MAX(timestamp) as max_timestamp
@@ -76,7 +77,8 @@ interface AccountBalanceDao {
             ab1.sms_source,
             ab1.source_type,
             ab1.account_type,
-            ab1.currency
+            ab1.currency,
+            ab1.default_cashback_percent
         FROM account_balances ab1
         INNER JOIN (
             SELECT bank_name, account_last4, MAX(timestamp) as max_timestamp
@@ -155,4 +157,15 @@ interface AccountBalanceDao {
 
     @Query("UPDATE account_balances SET bank_name = :newBankName WHERE bank_name = :oldBankName AND account_last4 = :accountLast4")
     suspend fun updateAccountBankName(oldBankName: String, accountLast4: String, newBankName: String): Int
+
+    @Query("UPDATE account_balances SET default_cashback_percent = :cashbackPercent WHERE bank_name = :bankName AND account_last4 = :accountLast4")
+    suspend fun updateDefaultCashback(bankName: String, accountLast4: String, cashbackPercent: BigDecimal?)
+
+    @Query("""
+        SELECT default_cashback_percent FROM account_balances
+        WHERE bank_name = :bankName AND account_last4 = :accountLast4
+        ORDER BY timestamp DESC
+        LIMIT 1
+    """)
+    suspend fun getDefaultCashback(bankName: String, accountLast4: String): BigDecimal?
 }

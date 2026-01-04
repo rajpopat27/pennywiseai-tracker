@@ -8,6 +8,7 @@ import com.pennywiseai.tracker.data.database.entity.CardEntity
 import com.pennywiseai.tracker.data.database.entity.CardType
 import com.pennywiseai.tracker.data.repository.AccountBalanceRepository
 import com.pennywiseai.tracker.data.repository.CardRepository
+import com.pennywiseai.tracker.data.repository.TransactionRepository
 import com.pennywiseai.tracker.domain.model.toDatabaseString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -51,7 +52,8 @@ enum class AccountType {
 class ManageAccountsViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val accountBalanceRepository: AccountBalanceRepository,
-    private val cardRepository: CardRepository
+    private val cardRepository: CardRepository,
+    private val transactionRepository: TransactionRepository
 ) : ViewModel() {
     
     private val sharedPrefs = context.getSharedPreferences("account_prefs", Context.MODE_PRIVATE)
@@ -203,25 +205,35 @@ class ManageAccountsViewModel @Inject constructor(
         }
     }
     
-    fun updateAccountBalance(bankName: String, accountLast4: String, newBalance: BigDecimal) {
+    fun updateAccountBalance(bankName: String, accountLast4: String, newBalance: BigDecimal, newCashback: BigDecimal? = null) {
         viewModelScope.launch {
-            // Get the latest balance to preserve credit limit
+            // Get the latest balance to preserve existing values
             val latestBalance = accountBalanceRepository.getLatestBalance(bankName, accountLast4)
-            
+
+            // Determine cashback: use new value if provided, otherwise preserve existing
+            val cashbackToUse = newCashback ?: latestBalance?.defaultCashbackPercent
+
             accountBalanceRepository.insertBalance(
                 AccountBalanceEntity(
                     bankName = bankName,
                     accountLast4 = accountLast4,
                     balance = newBalance,
                     creditLimit = latestBalance?.creditLimit,
-                    timestamp = LocalDateTime.now()
+                    timestamp = LocalDateTime.now(),
+                    defaultCashbackPercent = cashbackToUse
                 )
             )
         }
     }
     
-    fun updateCreditCard(bankName: String, accountLast4: String, newBalance: BigDecimal, newLimit: BigDecimal) {
+    fun updateCreditCard(bankName: String, accountLast4: String, newBalance: BigDecimal, newLimit: BigDecimal, newCashback: BigDecimal? = null) {
         viewModelScope.launch {
+            // Get the latest balance to preserve existing values
+            val latestBalance = accountBalanceRepository.getLatestBalance(bankName, accountLast4)
+
+            // Determine cashback: use new value if provided, otherwise preserve existing
+            val cashbackToUse = newCashback ?: latestBalance?.defaultCashbackPercent
+
             accountBalanceRepository.insertBalance(
                 AccountBalanceEntity(
                     bankName = bankName,
@@ -229,7 +241,8 @@ class ManageAccountsViewModel @Inject constructor(
                     balance = newBalance,
                     creditLimit = newLimit,
                     timestamp = LocalDateTime.now(),
-                    isCreditCard = true
+                    isCreditCard = true,
+                    defaultCashbackPercent = cashbackToUse
                 )
             )
         }
@@ -427,10 +440,14 @@ class ManageAccountsViewModel @Inject constructor(
         newBankName: String,
         newBalance: BigDecimal,
         newCreditLimit: BigDecimal?,
-        isCreditCard: Boolean
+        isCreditCard: Boolean,
+        newCashbackPercent: BigDecimal? = null
     ) {
         viewModelScope.launch {
             try {
+                // Get the latest balance to preserve existing values
+                val latestBalance = accountBalanceRepository.getLatestBalance(oldBankName, accountLast4)
+
                 // Update bank name if changed
                 if (newBankName != oldBankName) {
                     accountBalanceRepository.updateAccountBankName(oldBankName, accountLast4, newBankName)
@@ -447,6 +464,9 @@ class ManageAccountsViewModel @Inject constructor(
                     }
                 }
 
+                // Determine cashback: use new value if provided, otherwise preserve existing
+                val cashbackToUse = newCashbackPercent ?: latestBalance?.defaultCashbackPercent
+
                 // Insert new balance record with updated values
                 accountBalanceRepository.insertBalance(
                     AccountBalanceEntity(
@@ -456,13 +476,30 @@ class ManageAccountsViewModel @Inject constructor(
                         creditLimit = newCreditLimit,
                         timestamp = LocalDateTime.now(),
                         isCreditCard = isCreditCard,
-                        sourceType = "MANUAL"
+                        sourceType = "MANUAL",
+                        defaultCashbackPercent = cashbackToUse
                     )
                 )
 
-                _uiState.update {
-                    it.copy(successMessage = "Account updated successfully")
+                // Apply retroactive cashback to any transactions with null/zero cashback
+                // Use cashbackToUse (the effective cashback) so it works even if user didn't change the value
+                var retroactiveCount = 0
+                if (cashbackToUse != null && cashbackToUse > BigDecimal.ZERO) {
+                    android.util.Log.d("ManageAccountsVM", "Applying retroactive cashback: bankName='$newBankName', accountLast4='$accountLast4', cashback=${cashbackToUse.toDouble()}")
+                    retroactiveCount = transactionRepository.applyRetroactiveCashback(
+                        newBankName,
+                        accountLast4,
+                        cashbackToUse.toDouble()
+                    )
+                    android.util.Log.d("ManageAccountsVM", "Retroactive cashback applied to $retroactiveCount transactions")
                 }
+
+                val message = if (retroactiveCount > 0) {
+                    "Account updated. Cashback applied to $retroactiveCount transactions."
+                } else {
+                    "Account updated successfully"
+                }
+                _uiState.update { it.copy(successMessage = message) }
 
                 // Clear message after delay
                 delay(3000)
@@ -471,6 +508,55 @@ class ManageAccountsViewModel @Inject constructor(
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(errorMessage = "Failed to update account: ${e.message}")
+                }
+            }
+        }
+    }
+
+    fun updateAccountCashback(bankName: String, accountLast4: String, cashbackPercent: BigDecimal?) {
+        viewModelScope.launch {
+            try {
+                accountBalanceRepository.updateDefaultCashback(bankName, accountLast4, cashbackPercent)
+
+                // Apply retroactive cashback to existing transactions
+                if (cashbackPercent != null && cashbackPercent > BigDecimal.ZERO) {
+                    val updatedCount = transactionRepository.applyRetroactiveCashback(
+                        bankName,
+                        accountLast4,
+                        cashbackPercent.toDouble()
+                    )
+                    val message = if (updatedCount > 0) {
+                        "Cashback rate updated. Applied to $updatedCount existing transactions."
+                    } else {
+                        "Cashback rate updated successfully"
+                    }
+                    _uiState.update { it.copy(successMessage = message) }
+                } else {
+                    _uiState.update { it.copy(successMessage = "Cashback rate updated successfully") }
+                }
+
+                delay(3000)
+                _uiState.update { it.copy(successMessage = null) }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(errorMessage = "Failed to update cashback: ${e.message}")
+                }
+            }
+        }
+    }
+
+    fun updateCardCashback(cardId: Long, cashbackPercent: BigDecimal?) {
+        viewModelScope.launch {
+            try {
+                cardRepository.updateDefaultCashback(cardId, cashbackPercent)
+                _uiState.update {
+                    it.copy(successMessage = "Cashback rate updated successfully")
+                }
+                delay(2000)
+                _uiState.update { it.copy(successMessage = null) }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(errorMessage = "Failed to update cashback: ${e.message}")
                 }
             }
         }

@@ -405,17 +405,19 @@ fun ManageAccountsScreen(
                 accountLast4 = selectedAccount!!.second,
                 currentOutstanding = selectedAccountEntity!!.balance,
                 currentLimit = selectedAccountEntity!!.creditLimit ?: BigDecimal.ZERO,
+                currentCashback = selectedAccountEntity!!.defaultCashbackPercent,
                 onDismiss = {
                     showUpdateDialog = false
                     selectedAccount = null
                     selectedAccountEntity = null
                 },
-                onConfirm = { newBalance, newLimit ->
+                onConfirm = { newBalance, newLimit, newCashback ->
                     viewModel.updateCreditCard(
                         selectedAccount!!.first,
                         selectedAccount!!.second,
                         newBalance,
-                        newLimit
+                        newLimit,
+                        newCashback
                     )
                     showUpdateDialog = false
                     selectedAccount = null
@@ -427,16 +429,19 @@ fun ManageAccountsScreen(
             UpdateBalanceDialog(
                 bankName = selectedAccount!!.first,
                 accountLast4 = selectedAccount!!.second,
+                currentBalance = selectedAccountEntity!!.balance,
+                currentCashback = selectedAccountEntity!!.defaultCashbackPercent,
                 onDismiss = {
                     showUpdateDialog = false
                     selectedAccount = null
                     selectedAccountEntity = null
                 },
-                onConfirm = { newBalance ->
+                onConfirm = { newBalance, newCashback ->
                     viewModel.updateAccountBalance(
                         selectedAccount!!.first,
                         selectedAccount!!.second,
-                        newBalance
+                        newBalance,
+                        newCashback
                     )
                     showUpdateDialog = false
                     selectedAccount = null
@@ -491,14 +496,15 @@ fun ManageAccountsScreen(
                 showEditDialog = false
                 accountToEdit = null
             },
-            onConfirm = { newBankName, newBalance, newCreditLimit ->
+            onConfirm = { newBankName, newBalance, newCreditLimit, newCashbackPercent ->
                 viewModel.editAccount(
                     oldBankName = accountToEdit!!.bankName,
                     accountLast4 = accountToEdit!!.accountLast4,
                     newBankName = newBankName,
                     newBalance = newBalance,
                     newCreditLimit = newCreditLimit,
-                    isCreditCard = accountToEdit!!.isCreditCard
+                    isCreditCard = accountToEdit!!.isCreditCard,
+                    newCashbackPercent = newCashbackPercent
                 )
                 showEditDialog = false
                 accountToEdit = null
@@ -583,6 +589,22 @@ private fun CreditCardItem(
                                     modifier = Modifier.size(16.dp),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
+                            }
+                            // Cashback Badge
+                            card.defaultCashbackPercent?.let { cashback ->
+                                if (cashback > BigDecimal.ZERO) {
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.tertiaryContainer,
+                                        shape = MaterialTheme.shapes.small
+                                    ) {
+                                        Text(
+                                            text = "${cashback.stripTrailingZeros().toPlainString()}% cashback",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -805,6 +827,22 @@ private fun AccountItem(
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
+                            // Cashback Badge
+                            account.defaultCashbackPercent?.let { cashback ->
+                                if (cashback > BigDecimal.ZERO) {
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.tertiaryContainer,
+                                        shape = MaterialTheme.shapes.small
+                                    ) {
+                                        Text(
+                                            text = "${cashback.stripTrailingZeros().toPlainString()}% cashback",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+                            }
                         }
                         Text(
                             text = "Account Balance",
@@ -980,12 +1018,20 @@ private fun AccountItem(
 private fun UpdateBalanceDialog(
     bankName: String,
     accountLast4: String,
+    currentBalance: BigDecimal,
+    currentCashback: BigDecimal? = null,
     onDismiss: () -> Unit,
-    onConfirm: (BigDecimal) -> Unit
+    onConfirm: (BigDecimal, BigDecimal?) -> Unit
 ) {
-    var balanceText by remember { mutableStateOf("") }
-    var isValid by remember { mutableStateOf(false) }
-    
+    var balanceText by remember { mutableStateOf(currentBalance.toPlainString()) }
+    var cashbackText by remember { mutableStateOf(currentCashback?.toPlainString() ?: "") }
+    var isValid by remember { mutableStateOf(true) }
+
+    // Validation: balance must be valid, cashback is optional
+    LaunchedEffect(balanceText) {
+        isValid = balanceText.isNotBlank() && balanceText.toBigDecimalOrNull() != null
+    }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -999,35 +1045,61 @@ private fun UpdateBalanceDialog(
             }
         },
         text = {
-            OutlinedTextField(
-                value = balanceText,
-                onValueChange = { text ->
-                    if (text.isEmpty() || text.matches(Regex("^\\d*\\.?\\d*$"))) {
-                        balanceText = text
-                        isValid = text.isNotBlank() && text.toDoubleOrNull() != null
-                    }
-                },
-                label = { Text("New Balance") },
-                placeholder = { Text("0.00") },
-                leadingIcon = {
-                    Text(
-                        text = CurrencyFormatter.getCurrencySymbol(CurrencyFormatter.getBankBaseCurrency(bankName)),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Decimal
-                ),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(Spacing.md)
+            ) {
+                OutlinedTextField(
+                    value = balanceText,
+                    onValueChange = { text ->
+                        if (text.isEmpty() || text.matches(Regex("^\\d*\\.?\\d*$"))) {
+                            balanceText = text
+                        }
+                    },
+                    label = { Text("New Balance") },
+                    placeholder = { Text("0.00") },
+                    leadingIcon = {
+                        Text(
+                            text = CurrencyFormatter.getCurrencySymbol(CurrencyFormatter.getBankBaseCurrency(bankName)),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal
+                    ),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = cashbackText,
+                    onValueChange = { text ->
+                        if (text.isEmpty() || text.matches(Regex("^\\d*\\.?\\d*$"))) {
+                            cashbackText = text
+                        }
+                    },
+                    label = { Text("Default Cashback %") },
+                    placeholder = { Text("e.g., 1.5") },
+                    leadingIcon = {
+                        Icon(Icons.Default.Percent, contentDescription = null)
+                    },
+                    supportingText = {
+                        Text("Cashback earned on transactions (0-100)")
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal
+                    ),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         },
         confirmButton = {
             TextButton(
                 onClick = {
                     balanceText.toBigDecimalOrNull()?.let { balance ->
-                        onConfirm(balance)
+                        val cashback = cashbackText.toBigDecimalOrNull()
+                        onConfirm(balance, cashback)
                     }
                 },
                 enabled = isValid
@@ -1050,17 +1122,19 @@ private fun UpdateCreditCardDialog(
     accountLast4: String,
     currentOutstanding: BigDecimal,
     currentLimit: BigDecimal,
+    currentCashback: BigDecimal? = null,
     onDismiss: () -> Unit,
-    onConfirm: (BigDecimal, BigDecimal) -> Unit
+    onConfirm: (BigDecimal, BigDecimal, BigDecimal?) -> Unit
 ) {
     var outstandingText by remember { mutableStateOf(currentOutstanding.toString()) }
     var limitText by remember { mutableStateOf(currentLimit.toString()) }
+    var cashbackText by remember { mutableStateOf(currentCashback?.toString() ?: "") }
     var isValid by remember { mutableStateOf(false) }
-    
+
     LaunchedEffect(outstandingText, limitText) {
-        isValid = outstandingText.isNotBlank() && 
+        isValid = outstandingText.isNotBlank() &&
                   outstandingText.toDoubleOrNull() != null &&
-                  limitText.isNotBlank() && 
+                  limitText.isNotBlank() &&
                   limitText.toDoubleOrNull() != null
     }
     
@@ -1123,7 +1197,30 @@ private fun UpdateCreditCardDialog(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
+                // Default Cashback Percentage
+                OutlinedTextField(
+                    value = cashbackText,
+                    onValueChange = { text ->
+                        if (text.isEmpty() || text.matches(Regex("^\\d*\\.?\\d*$"))) {
+                            cashbackText = text
+                        }
+                    },
+                    label = { Text("Default Cashback %") },
+                    placeholder = { Text("e.g., 1.5") },
+                    leadingIcon = {
+                        Icon(Icons.Default.Percent, contentDescription = null)
+                    },
+                    supportingText = {
+                        Text("Cashback earned on transactions (0-100)")
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal
+                    ),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
                 // Show available credit
                 val outstanding = outstandingText.toBigDecimalOrNull() ?: BigDecimal.ZERO
                 val limit = limitText.toBigDecimalOrNull() ?: BigDecimal.ZERO
@@ -1187,7 +1284,8 @@ private fun UpdateCreditCardDialog(
                 onClick = {
                     val outstanding = outstandingText.toBigDecimalOrNull() ?: BigDecimal.ZERO
                     val limit = limitText.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                    onConfirm(outstanding, limit)
+                    val cashback = cashbackText.toBigDecimalOrNull()
+                    onConfirm(outstanding, limit, cashback)
                 },
                 enabled = isValid
             ) {
@@ -1510,11 +1608,12 @@ private fun DeleteAccountConfirmDialog(
 private fun EditAccountDialog(
     account: com.pennywiseai.tracker.data.database.entity.AccountBalanceEntity,
     onDismiss: () -> Unit,
-    onConfirm: (bankName: String, balance: BigDecimal, creditLimit: BigDecimal?) -> Unit
+    onConfirm: (bankName: String, balance: BigDecimal, creditLimit: BigDecimal?, cashbackPercent: BigDecimal?) -> Unit
 ) {
     var bankNameText by remember { mutableStateOf(account.bankName) }
     var balanceText by remember { mutableStateOf(account.balance.toString()) }
     var creditLimitText by remember { mutableStateOf(account.creditLimit?.toString() ?: "") }
+    var cashbackText by remember { mutableStateOf(account.defaultCashbackPercent?.toString() ?: "") }
     var isValid by remember { mutableStateOf(false) }
 
     LaunchedEffect(bankNameText, balanceText, creditLimitText) {
@@ -1685,6 +1784,39 @@ private fun EditAccountDialog(
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
+
+                // Default Cashback Percentage
+                OutlinedTextField(
+                    value = cashbackText,
+                    onValueChange = { text ->
+                        if (text.isEmpty() || text.matches(Regex("^\\d*\\.?\\d{0,2}$"))) {
+                            val value = text.toDoubleOrNull()
+                            if (value == null || value <= 100) {
+                                cashbackText = text
+                            }
+                        }
+                    },
+                    label = { Text("Default Cashback %") },
+                    placeholder = { Text("1.5") },
+                    leadingIcon = {
+                        Icon(Icons.Default.Percent, contentDescription = null)
+                    },
+                    trailingIcon = {
+                        Text(
+                            text = "%",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    supportingText = {
+                        Text("Cashback earned on transactions (0-100)")
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal
+                    ),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         },
         confirmButton = {
@@ -1694,7 +1826,8 @@ private fun EditAccountDialog(
                     val creditLimit = if (account.isCreditCard) {
                         creditLimitText.toBigDecimalOrNull()
                     } else null
-                    onConfirm(bankNameText, balance, creditLimit)
+                    val cashback = cashbackText.toBigDecimalOrNull()
+                    onConfirm(bankNameText, balance, creditLimit, cashback)
                 },
                 enabled = isValid
             ) {

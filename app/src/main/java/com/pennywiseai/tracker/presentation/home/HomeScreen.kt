@@ -1075,8 +1075,17 @@ private fun ReferenceTransactionItem(
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(2.dp))
+                // Build subtitle with bank name and cashback info
+                val subtitleParts = buildList {
+                    add(transaction.bankName ?: "Unknown")
+                    transaction.cashbackAmount?.let { cashback ->
+                        if (cashback > java.math.BigDecimal.ZERO) {
+                            add("${CurrencyFormatter.formatCurrency(cashback, transaction.currency)} cashback")
+                        }
+                    }
+                }
                 Text(
-                    text = transaction.bankName ?: "Unknown",
+                    text = subtitleParts.joinToString(" • "),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,

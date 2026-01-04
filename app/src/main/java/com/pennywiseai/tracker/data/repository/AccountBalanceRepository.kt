@@ -136,4 +136,12 @@ class AccountBalanceRepository @Inject constructor(
     suspend fun deleteAllBalances() {
         accountBalanceDao.deleteAllBalances()
     }
+
+    suspend fun updateDefaultCashback(bankName: String, accountLast4: String, cashbackPercent: BigDecimal?) {
+        accountBalanceDao.updateDefaultCashback(bankName, accountLast4, cashbackPercent)
+    }
+
+    suspend fun getDefaultCashback(bankName: String, accountLast4: String): BigDecimal? {
+        return accountBalanceDao.getDefaultCashback(bankName, accountLast4)
+    }
 }

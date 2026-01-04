@@ -291,4 +291,18 @@ class TransactionRepository @Inject constructor(
             transaction.category.isNullOrBlank() || transaction.category == "Others"
         }
     }
+
+    /**
+     * Applies cashback retroactively to all EXPENSE/CREDIT transactions
+     * for an account that don't already have cashback set.
+     *
+     * @return Number of transactions updated
+     */
+    suspend fun applyRetroactiveCashback(
+        bankName: String,
+        accountLast4: String,
+        cashbackPercent: Double
+    ): Int {
+        return transactionDao.applyRetroactiveCashback(bankName, accountLast4, cashbackPercent)
+    }
 }

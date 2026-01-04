@@ -176,6 +176,48 @@ class AnalyticsViewModel @Inject constructor(
                     .sortedByDescending { it.amount }
                     .take(10) // Top 10 merchants
 
+                // Group by account (bank + account number)
+                val accountBreakdown = filteredTransactions
+                    .groupBy { txn ->
+                        val accountKey = if (txn.accountNumber != null) {
+                            "${txn.bankName ?: "Unknown"}|${txn.accountNumber}"
+                        } else {
+                            txn.bankName ?: "Unknown"
+                        }
+                        accountKey
+                    }
+                    .map { (accountKey, txns) ->
+                        val parts = accountKey.split("|")
+                        val bankName = parts.getOrElse(0) { "Unknown" }
+                        val accountNumber = parts.getOrNull(1)
+
+                        val totalSpent = txns
+                            .filter { it.transactionType == com.pennywiseai.tracker.data.database.entity.TransactionType.EXPENSE ||
+                                      it.transactionType == com.pennywiseai.tracker.data.database.entity.TransactionType.CREDIT }
+                            .sumOf { it.amount.toDouble() }
+                            .toBigDecimal()
+
+                        val totalIncome = txns
+                            .filter { it.transactionType == com.pennywiseai.tracker.data.database.entity.TransactionType.INCOME }
+                            .sumOf { it.amount.toDouble() }
+                            .toBigDecimal()
+
+                        val cashbackEarned = txns
+                            .mapNotNull { it.cashbackAmount }
+                            .sumOf { it.toDouble() }
+                            .toBigDecimal()
+
+                        AccountData(
+                            bankName = bankName,
+                            accountNumber = accountNumber,
+                            totalSpent = totalSpent,
+                            totalIncome = totalIncome,
+                            transactionCount = txns.size,
+                            cashbackEarned = cashbackEarned
+                        )
+                    }
+                    .sortedByDescending { it.totalSpent }
+
                 // Calculate average amount
                 val averageAmount = if (filteredTransactions.isNotEmpty()) {
                     totalSpending.divide(BigDecimal(filteredTransactions.size), 2, java.math.RoundingMode.HALF_UP)
@@ -186,14 +228,22 @@ class AnalyticsViewModel @Inject constructor(
                 // Get top category info
                 val topCategory = categoryBreakdown.firstOrNull()
 
+                // Calculate total cashback earned
+                val totalCashback = filteredTransactions
+                    .mapNotNull { it.cashbackAmount }
+                    .sumOf { it.toDouble() }
+                    .toBigDecimal()
+
                 AnalyticsUiState(
                     totalSpending = totalSpending,
                     categoryBreakdown = categoryBreakdown,
                     topMerchants = merchantBreakdown,
+                    accountBreakdown = accountBreakdown,
                     transactionCount = filteredTransactions.size,
                     averageAmount = averageAmount,
                     topCategory = topCategory?.name,
                     topCategoryPercentage = topCategory?.percentage ?: 0f,
+                    totalCashback = totalCashback,
                     currency = filterState.currency,
                     isLoading = false
                 )
@@ -334,10 +384,12 @@ data class AnalyticsUiState(
     val totalSpending: BigDecimal = BigDecimal.ZERO,
     val categoryBreakdown: List<CategoryData> = emptyList(),
     val topMerchants: List<MerchantData> = emptyList(),
+    val accountBreakdown: List<AccountData> = emptyList(),
     val transactionCount: Int = 0,
     val averageAmount: BigDecimal = BigDecimal.ZERO,
     val topCategory: String? = null,
     val topCategoryPercentage: Float = 0f,
+    val totalCashback: BigDecimal = BigDecimal.ZERO,
     val currency: String = "INR",
     val isLoading: Boolean = true
 )
@@ -354,6 +406,15 @@ data class MerchantData(
     val amount: BigDecimal,
     val transactionCount: Int,
     val isSubscription: Boolean
+)
+
+data class AccountData(
+    val bankName: String,
+    val accountNumber: String?,
+    val totalSpent: BigDecimal,
+    val totalIncome: BigDecimal,
+    val transactionCount: Int,
+    val cashbackEarned: BigDecimal
 )
 
 // Amount filter data class

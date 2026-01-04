@@ -10,6 +10,7 @@ import com.pennywiseai.tracker.data.database.entity.TransactionType
 import com.pennywiseai.tracker.data.manager.PendingTransactionManager
 import com.pennywiseai.tracker.data.repository.AccountBalanceRepository
 import com.pennywiseai.tracker.data.repository.CategoryRepository
+import com.pennywiseai.tracker.data.repository.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,14 +22,17 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.LocalDateTime
 import javax.inject.Inject
+import kotlinx.coroutines.flow.combine
 
 @HiltViewModel
 class PendingTransactionsViewModel @Inject constructor(
     private val pendingTransactionManager: PendingTransactionManager,
     private val categoryRepository: CategoryRepository,
-    private val accountBalanceRepository: AccountBalanceRepository
+    private val accountBalanceRepository: AccountBalanceRepository,
+    private val transactionRepository: TransactionRepository
 ) : ViewModel() {
 
     companion object {
@@ -83,6 +87,57 @@ class PendingTransactionsViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    // Estimated cashback based on selected pending transaction and account's default cashback rate
+    val estimatedCashback: StateFlow<BigDecimal?> = combine(
+        _editedPending,
+        accounts
+    ) { pending, accountsList ->
+        if (pending == null) return@combine null
+
+        // Only calculate for expense/credit transactions
+        if (pending.transactionType != TransactionType.EXPENSE &&
+            pending.transactionType != TransactionType.CREDIT) {
+            return@combine null
+        }
+
+        // Find the matching account to get cashback rate
+        // Try exact match first
+        var matchingAccount = accountsList.find { account ->
+            account.bankName == pending.bankName &&
+            account.accountLast4 == pending.accountNumber
+        }
+
+        // If no exact match and accountNumber is not null, try partial match
+        if (matchingAccount == null && pending.accountNumber != null) {
+            matchingAccount = accountsList.find { account ->
+                account.bankName == pending.bankName &&
+                (account.accountLast4.contains(pending.accountNumber!!) ||
+                 pending.accountNumber!!.contains(account.accountLast4))
+            }
+        }
+
+        // If still no match, try bank name only (if single account for that bank)
+        if (matchingAccount == null) {
+            val bankAccounts = accountsList.filter { it.bankName == pending.bankName }
+            if (bankAccounts.size == 1) {
+                matchingAccount = bankAccounts.first()
+            }
+        }
+
+        val cashbackPercent = matchingAccount?.defaultCashbackPercent
+        if (cashbackPercent == null || cashbackPercent <= BigDecimal.ZERO) {
+            return@combine null
+        }
+
+        // Calculate estimated cashback
+        pending.amount.multiply(cashbackPercent)
+            .divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = null
+    )
+
     // Events
     private val _events = MutableSharedFlow<PendingTransactionEvent>()
     val events = _events.asSharedFlow()
@@ -99,7 +154,21 @@ class PendingTransactionsViewModel @Inject constructor(
      */
     fun selectPending(pending: PendingTransactionEntity) {
         _selectedPending.value = pending
-        _editedPending.value = pending
+
+        // Try to auto-match an account if accountNumber is missing
+        val updatedPending = if (pending.accountNumber == null && pending.bankName != null) {
+            val matchingAccounts = accounts.value.filter { it.bankName == pending.bankName }
+            if (matchingAccounts.size == 1) {
+                // If there's exactly one account for this bank, auto-select it
+                pending.copy(accountNumber = matchingAccounts.first().accountLast4)
+            } else {
+                pending
+            }
+        } else {
+            pending
+        }
+
+        _editedPending.value = updatedPending
     }
 
     /**
@@ -254,6 +323,136 @@ class PendingTransactionsViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading pending transaction", e)
+            }
+        }
+    }
+
+    /**
+     * Gets the current cashback rate for the selected account
+     */
+    val currentAccountCashback: StateFlow<BigDecimal?> = combine(
+        _editedPending,
+        accounts
+    ) { pending, accountsList ->
+        if (pending == null) return@combine null
+
+        // Find the matching account
+        val matchingAccount = findMatchingAccount(pending, accountsList)
+        matchingAccount?.defaultCashbackPercent
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = null
+    )
+
+    /**
+     * Updates the cashback rate for the currently selected account.
+     * Also applies the cashback retroactively to existing transactions
+     * that don't already have cashback set.
+     */
+    fun updateAccountCashback(cashbackPercent: BigDecimal?) {
+        val pending = _editedPending.value ?: return
+        val bankName = pending.bankName ?: return
+        val accountNumber = pending.accountNumber ?: return
+
+        viewModelScope.launch {
+            try {
+                // Update the account's default cashback
+                accountBalanceRepository.updateDefaultCashback(bankName, accountNumber, cashbackPercent)
+                Log.d(TAG, "Updated cashback for $bankName $accountNumber to $cashbackPercent%")
+
+                // Apply retroactively to existing transactions that don't have cashback set
+                if (cashbackPercent != null && cashbackPercent > BigDecimal.ZERO) {
+                    val updatedCount = transactionRepository.applyRetroactiveCashback(
+                        bankName,
+                        accountNumber,
+                        cashbackPercent.toDouble()
+                    )
+                    if (updatedCount > 0) {
+                        Log.d(TAG, "Applied $cashbackPercent% cashback retroactively to $updatedCount transactions")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error updating cashback", e)
+            }
+        }
+    }
+
+    /**
+     * Helper function to find matching account for a pending transaction
+     */
+    private fun findMatchingAccount(
+        pending: PendingTransactionEntity,
+        accountsList: List<AccountBalanceEntity>
+    ): AccountBalanceEntity? {
+        // Try exact match first
+        var matchingAccount = accountsList.find { account ->
+            account.bankName == pending.bankName &&
+            account.accountLast4 == pending.accountNumber
+        }
+
+        // If no exact match and accountNumber is not null, try partial match
+        if (matchingAccount == null && pending.accountNumber != null) {
+            matchingAccount = accountsList.find { account ->
+                account.bankName == pending.bankName &&
+                (account.accountLast4.contains(pending.accountNumber!!) ||
+                 pending.accountNumber!!.contains(account.accountLast4))
+            }
+        }
+
+        // If still no match, try bank name only (if single account for that bank)
+        if (matchingAccount == null) {
+            val bankAccounts = accountsList.filter { it.bankName == pending.bankName }
+            if (bankAccounts.size == 1) {
+                matchingAccount = bankAccounts.first()
+            }
+        }
+
+        return matchingAccount
+    }
+
+    /**
+     * Creates a new account from the pending transaction confirmation dialog.
+     * Also applies cashback retroactively to existing transactions for this account.
+     */
+    fun createAccount(
+        bankName: String,
+        accountLast4: String,
+        balance: BigDecimal,
+        isCreditCard: Boolean,
+        creditLimit: BigDecimal?,
+        cashbackPercent: BigDecimal?
+    ) {
+        viewModelScope.launch {
+            try {
+                accountBalanceRepository.insertBalance(
+                    AccountBalanceEntity(
+                        bankName = bankName,
+                        accountLast4 = accountLast4,
+                        balance = balance,
+                        creditLimit = creditLimit,
+                        timestamp = LocalDateTime.now(),
+                        isCreditCard = isCreditCard,
+                        sourceType = "MANUAL",
+                        defaultCashbackPercent = cashbackPercent
+                    )
+                )
+                Log.d(TAG, "Created new account: $bankName ••$accountLast4")
+
+                // Apply retroactive cashback to existing transactions for this account
+                if (cashbackPercent != null && cashbackPercent > BigDecimal.ZERO) {
+                    val updatedCount = transactionRepository.applyRetroactiveCashback(
+                        bankName,
+                        accountLast4,
+                        cashbackPercent.toDouble()
+                    )
+                    if (updatedCount > 0) {
+                        Log.d(TAG, "Applied $cashbackPercent% cashback retroactively to $updatedCount transactions")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error creating account", e)
+                _events.emit(PendingTransactionEvent.Error("Failed to create account: ${e.message}"))
             }
         }
     }

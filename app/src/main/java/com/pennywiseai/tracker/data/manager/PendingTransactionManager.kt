@@ -227,18 +227,21 @@ class PendingTransactionManager @Inject constructor(
                 entityWithRules
             }
 
+            // Apply cashback for expense/credit transactions
+            val entityWithCashback = applyDefaultCashback(finalEntity, editedEntity)
+
             // Save to main transactions table
-            val transactionId = pendingTransactionRepository.confirm(pending, finalEntity)
+            val transactionId = pendingTransactionRepository.confirm(pending, entityWithCashback)
 
             if (transactionId != -1L) {
-                Log.d(TAG, "Confirmed transaction with ID: $transactionId${if (finalEntity.isRecurring) " (Recurring)" else ""}")
+                Log.d(TAG, "Confirmed transaction with ID: $transactionId${if (entityWithCashback.isRecurring) " (Recurring)" else ""}${if (entityWithCashback.cashbackAmount != null && entityWithCashback.cashbackAmount > BigDecimal.ZERO) " (Cashback: ${entityWithCashback.cashbackAmount})" else ""}")
                 // Save rule applications if any
                 if (ruleApplications.isNotEmpty()) {
                     ruleRepository.saveRuleApplications(ruleApplications)
                 }
 
                 // Process balance update (create/update account)
-                processBalanceUpdate(editedEntity, finalEntity, transactionId)
+                processBalanceUpdate(editedEntity, entityWithCashback, transactionId)
             }
 
             transactionId
@@ -451,6 +454,40 @@ class PendingTransactionManager @Inject constructor(
             Log.d(TAG, "Saved balance update for $bankName **$targetAccountLast4")
         } catch (e: Exception) {
             Log.e(TAG, "Error processing balance update", e)
+        }
+    }
+
+    /**
+     * Applies default cashback rate from the account to the transaction.
+     * Only applies to EXPENSE and CREDIT transaction types.
+     */
+    private suspend fun applyDefaultCashback(
+        entity: TransactionEntity,
+        pending: PendingTransactionEntity
+    ): TransactionEntity {
+        // Only calculate cashback for expense/credit transactions
+        if (entity.transactionType != TransactionType.EXPENSE &&
+            entity.transactionType != TransactionType.CREDIT) {
+            return entity
+        }
+
+        val bankName = pending.bankName ?: return entity
+        val accountLast4 = pending.accountNumber ?: return entity
+
+        // Get cashback rate from account
+        val cashbackPercent = accountBalanceRepository.getDefaultCashback(bankName, accountLast4)
+
+        // If we have a cashback rate, apply it
+        return if (cashbackPercent != null && cashbackPercent > BigDecimal.ZERO) {
+            val cashbackAmount = entity.amount.multiply(cashbackPercent)
+                .divide(BigDecimal(100), 2, java.math.RoundingMode.HALF_UP)
+            Log.d(TAG, "Applied ${cashbackPercent}% cashback: $cashbackAmount")
+            entity.copy(
+                cashbackPercent = cashbackPercent,
+                cashbackAmount = cashbackAmount
+            )
+        } else {
+            entity
         }
     }
 

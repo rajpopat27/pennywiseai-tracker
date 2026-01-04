@@ -28,6 +28,8 @@ fun PendingTransactionReviewScreen(
     val accounts by viewModel.accounts.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val pendingCount by viewModel.pendingCount.collectAsStateWithLifecycle()
+    val estimatedCashback by viewModel.estimatedCashback.collectAsStateWithLifecycle()
+    val currentAccountCashback by viewModel.currentAccountCashback.collectAsStateWithLifecycle()
 
     // Load the pending transaction
     LaunchedEffect(pendingId) {
@@ -74,12 +76,16 @@ fun PendingTransactionReviewScreen(
             categories = categories,
             accounts = accounts,
             isLoading = isLoading,
+            estimatedCashback = estimatedCashback,
+            currentAccountCashback = currentAccountCashback,
             onAmountChange = viewModel::updateAmount,
             onMerchantChange = viewModel::updateMerchant,
             onCategoryChange = viewModel::updateCategory,
             onTransactionTypeChange = viewModel::updateTransactionType,
             onDescriptionChange = viewModel::updateDescription,
             onAccountChange = viewModel::updateAccount,
+            onCashbackChange = viewModel::updateAccountCashback,
+            onCreateAccount = viewModel::createAccount,
             onConfirm = viewModel::confirmSelected,
             onDismiss = {
                 viewModel.rejectSelected()

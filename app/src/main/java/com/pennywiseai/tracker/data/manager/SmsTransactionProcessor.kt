@@ -154,6 +154,7 @@ class SmsTransactionProcessor @Inject constructor(
      * - Rule application
      * - Subscription matching
      * - Balance updates
+     * - Cashback calculation
      */
     suspend fun saveParsedTransaction(
         parsedTransaction: ParsedTransaction,
@@ -161,7 +162,7 @@ class SmsTransactionProcessor @Inject constructor(
     ): ProcessingResult {
         return try {
             // Convert to entity
-            val entity = parsedTransaction.toEntity()
+            var entity = parsedTransaction.toEntity()
 
             // Check if this transaction was previously deleted by the user
             val existingTransaction = transactionRepository.getTransactionByHash(entity.transactionHash)
@@ -215,7 +216,7 @@ class SmsTransactionProcessor @Inject constructor(
                 entityWithRules.amount
             )
 
-            val finalEntity = if (matchedSubscription != null) {
+            var finalEntity = if (matchedSubscription != null) {
                 Log.d(TAG, "Transaction matched to active subscription: ${matchedSubscription.merchantName}")
                 subscriptionRepository.updateNextPaymentDateAfterCharge(
                     matchedSubscription.id,
@@ -226,9 +227,12 @@ class SmsTransactionProcessor @Inject constructor(
                 entityWithRules
             }
 
+            // Apply default cashback rate from account/card
+            finalEntity = applyDefaultCashback(finalEntity, parsedTransaction)
+
             val rowId = transactionRepository.insertTransaction(finalEntity)
             if (rowId != -1L) {
-                Log.d(TAG, "Saved new transaction with ID: $rowId${if (finalEntity.isRecurring) " (Recurring)" else ""}")
+                Log.d(TAG, "Saved new transaction with ID: $rowId${if (finalEntity.isRecurring) " (Recurring)" else ""}${if (finalEntity.cashbackAmount != null && finalEntity.cashbackAmount > BigDecimal.ZERO) " (Cashback: ${finalEntity.cashbackAmount})" else ""}")
 
                 // Save rule applications if any rules were applied
                 if (ruleApplications.isNotEmpty()) {
@@ -246,6 +250,43 @@ class SmsTransactionProcessor @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Error saving transaction: ${e.message}")
             return ProcessingResult(false, reason = e.message)
+        }
+    }
+
+    /**
+     * Applies the default cashback rate from the account/card to the transaction.
+     */
+    private suspend fun applyDefaultCashback(
+        entity: TransactionEntity,
+        parsedTransaction: ParsedTransaction
+    ): TransactionEntity {
+        // Only apply cashback to expense transactions
+        if (entity.transactionType != TransactionType.EXPENSE &&
+            entity.transactionType != TransactionType.CREDIT) {
+            return entity
+        }
+
+        val bankName = parsedTransaction.bankName
+        val accountLast4 = parsedTransaction.accountLast4 ?: return entity
+
+        // Try to get cashback rate from card first (for credit cards)
+        var cashbackPercent = cardRepository.getDefaultCashbackByCard(bankName, accountLast4)
+
+        // If no card-specific rate, try account rate
+        if (cashbackPercent == null) {
+            cashbackPercent = accountBalanceRepository.getDefaultCashback(bankName, accountLast4)
+        }
+
+        // If we have a cashback rate, apply it
+        return if (cashbackPercent != null && cashbackPercent > BigDecimal.ZERO) {
+            val cashbackAmount = entity.amount.multiply(cashbackPercent).divide(BigDecimal(100), 2, java.math.RoundingMode.HALF_UP)
+            Log.d(TAG, "Applied ${cashbackPercent}% cashback: ${cashbackAmount}")
+            entity.copy(
+                cashbackPercent = cashbackPercent,
+                cashbackAmount = cashbackAmount
+            )
+        } else {
+            entity
         }
     }
 
@@ -354,7 +395,8 @@ class SmsTransactionProcessor @Inject constructor(
                 isCreditCard = isCreditCard || (existingAccount?.isCreditCard ?: false),
                 smsSource = parsedTransaction.smsBody.take(500),
                 sourceType = "TRANSACTION",
-                currency = parsedTransaction.currency
+                currency = parsedTransaction.currency,
+                defaultCashbackPercent = existingAccount?.defaultCashbackPercent
             )
 
             accountBalanceRepository.insertBalance(balanceEntity)

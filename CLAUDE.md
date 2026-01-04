@@ -34,6 +34,50 @@ Please reference these documents when working on this project:
 - Ensure UI components are reusable and testable
 - Always test on both light and dark themes
 
+## Development Principles (ALWAYS FOLLOW)
+
+### Build and Verification
+- **DO NOT run builds** (`./gradlew build`, `./gradlew assembleDebug`, etc.) - the environment may not have Android SDK properly configured
+- **ALWAYS analyze generated code** after writing it - review for correctness, consistency, and potential issues
+- Verify imports are correct and all referenced classes exist
+- Check for typos, missing parameters, and type mismatches
+- Ensure new code follows existing patterns in the codebase
+
+### Data Patterns
+- Use best data structures for the task (consider time/space complexity)
+- Prefer immutable data classes for state
+- Use sealed classes for representing finite states (Result, UiState, etc.)
+- Centralize business logic - avoid duplicating processing code across multiple paths
+- Single source of truth for data - one repository per domain concept
+
+### UI Consistency
+- All screens must use `PennyWiseScaffold` with consistent TopAppBar actions
+- Use design system tokens (`Spacing.*`, `Dimensions.*`) instead of hardcoded dp values
+- Reuse existing components (`PennyWiseCard`, `CategoryIcon`, etc.) - don't create duplicates
+- Consistent padding/spacing - layouts should not shift when content changes
+- Same visual patterns across similar screens (filters, empty states, list items)
+
+### Code Reusability Guidelines
+- **DO reuse** when: Same logic appears 2+ times, component is truly generic, no performance cost
+- **DON'T reuse** when: It sacrifices readability, adds unnecessary abstraction, hurts performance
+- Prefer composition over inheritance for UI components
+- Extract to shared component only when there are 3+ usages with same pattern
+- Keep reusable components focused - one responsibility per component
+
+### Performance Considerations
+- Use `remember` and `derivedStateOf` appropriately in Compose
+- Prefer database-level filtering over in-memory filtering for large datasets
+- Add indexes for frequently queried columns
+- Use Flow for reactive queries, suspend for one-shot operations
+- Avoid unnecessary recomposition - use stable keys for lists
+
+### Documentation References
+When working on refactoring or features, reference:
+- `/docs/architecture-refactor-analysis.md` - Technical debt and issues
+- `/docs/architecture-refactor-todo.md` - Refactoring checklist
+- `/docs/features-roadmap.md` - Planned features and changes
+- `/docs/transaction-processing-refactor.md` - Transaction flow architecture
+
 ## Current Phase
 Working on Phase 1: Core Foundation (Project setup, Material 3 theming, Room database, Navigation)
 

@@ -53,7 +53,7 @@ import com.pennywiseai.tracker.data.database.entity.UnrecognizedSmsEntity
         ExchangeRateEntity::class,
         PendingTransactionEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 @TypeConverters(Converters::class)

@@ -61,7 +61,10 @@ data class CardEntity(
     val updatedAt: LocalDateTime = LocalDateTime.now(),
 
     @ColumnInfo(name = "currency", defaultValue = "INR")
-    val currency: String = "INR"
+    val currency: String = "INR",
+
+    @ColumnInfo(name = "default_cashback_percent")
+    val defaultCashbackPercent: BigDecimal? = null
 )
 
 enum class CardType {
