@@ -74,8 +74,15 @@ class SmsTransactionProcessor @Inject constructor(
         bypassConfirmation: Boolean = false
     ): ProcessingResult {
         try {
+            // Check if we should use generic parser for all SMS
+            val useGenericParser = userPreferencesRepository.getUseGenericParser()
+
             // Parse the SMS with automatic fallback to generic parser
-            val parsedTransaction = BankParserFactory.parseWithFallback(sender, body, timestamp)
+            val parsedTransaction = if (useGenericParser) {
+                BankParserFactory.getGenericParser().parse(body, sender, timestamp)
+            } else {
+                BankParserFactory.parseWithFallback(sender, body, timestamp)
+            }
             if (parsedTransaction == null) {
                 return ProcessingResult(false, reason = "Could not parse transaction from SMS")
             }

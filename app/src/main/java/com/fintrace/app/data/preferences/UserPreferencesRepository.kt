@@ -49,6 +49,9 @@ class UserPreferencesRepository @Inject constructor(
         // Transaction Confirmation preferences
         val TRANSACTION_CONFIRMATION_ENABLED = booleanPreferencesKey("transaction_confirmation_enabled")
         val BYPASS_CONFIRMATION_FOR_SCANS = booleanPreferencesKey("bypass_confirmation_for_scans")
+
+        // Parser preferences
+        val USE_GENERIC_PARSER = booleanPreferencesKey("use_generic_parser")
     }
 
     val userPreferences: Flow<UserPreferences> = context.dataStore.data
@@ -369,6 +372,24 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun getBypassConfirmationForScans(): Boolean {
         return context.dataStore.data
             .map { preferences -> preferences[PreferencesKeys.BYPASS_CONFIRMATION_FOR_SCANS] ?: true }
+            .first()
+    }
+
+    // Generic Parser methods
+    val useGenericParser: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.USE_GENERIC_PARSER] ?: false
+        }
+
+    suspend fun setUseGenericParser(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.USE_GENERIC_PARSER] = enabled
+        }
+    }
+
+    suspend fun getUseGenericParser(): Boolean {
+        return context.dataStore.data
+            .map { preferences -> preferences[PreferencesKeys.USE_GENERIC_PARSER] ?: false }
             .first()
     }
 }

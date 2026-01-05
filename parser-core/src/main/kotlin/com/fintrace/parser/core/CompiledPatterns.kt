@@ -42,12 +42,12 @@ object CompiledPatterns {
 
     object Merchant {
         val TO_PATTERN =
-            Regex("""to\s+([^\.\n]+?)(?:\s+on|\s+at|\s+Ref|\s+UPI)""", RegexOption.IGNORE_CASE)
+            Regex("""to\s+([^\.\n]+?)(?:\s+on|\s+at|\s+Ref|\s+UPI|\.)""", RegexOption.IGNORE_CASE)
         val FROM_PATTERN =
-            Regex("""from\s+([^\.\n]+?)(?:\s+on|\s+at|\s+Ref|\s+UPI)""", RegexOption.IGNORE_CASE)
-        val AT_PATTERN = Regex("""at\s+([^\.\n]+?)(?:\s+on|\s+Ref)""", RegexOption.IGNORE_CASE)
+            Regex("""from\s+([^\.\n]+?)(?:\s+on|\s+at|\s+Ref|\s+UPI|\.)""", RegexOption.IGNORE_CASE)
+        val AT_PATTERN = Regex("""at\s+([^\.\n]+?)(?:\s+on|\s+Ref|\.)""", RegexOption.IGNORE_CASE)
         val FOR_PATTERN =
-            Regex("""for\s+([^\.\n]+?)(?:\s+on|\s+at|\s+Ref)""", RegexOption.IGNORE_CASE)
+            Regex("""for\s+([^\.\n]+?)(?:\s+on|\s+at|\s+Ref|\.)""", RegexOption.IGNORE_CASE)
         val ALL_PATTERNS = listOf(TO_PATTERN, FROM_PATTERN, AT_PATTERN, FOR_PATTERN)
     }
 

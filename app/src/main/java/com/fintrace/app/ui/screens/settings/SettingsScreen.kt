@@ -67,6 +67,7 @@ fun SettingsScreen(
     val themeUiState by themeViewModel.themeUiState.collectAsStateWithLifecycle()
     val isTransactionConfirmationEnabled by settingsViewModel.isTransactionConfirmationEnabled.collectAsStateWithLifecycle(initialValue = true)
     val isBypassConfirmationForScans by settingsViewModel.isBypassConfirmationForScans.collectAsStateWithLifecycle(initialValue = true)
+    val useGenericParser by settingsViewModel.useGenericParser.collectAsStateWithLifecycle(initialValue = false)
     val scanPeriod by settingsViewModel.scanPeriod.collectAsStateWithLifecycle()
     val smsScanMonths by settingsViewModel.smsScanMonths.collectAsStateWithLifecycle(initialValue = 3)
     val smsScanAllTime by settingsViewModel.smsScanAllTime.collectAsStateWithLifecycle(initialValue = false)
@@ -352,6 +353,22 @@ fun SettingsScreen(
                         }
                     )
                 }
+            }
+
+            // Advanced Section
+            SectionHeader(title = "Advanced")
+
+            SettingsCard {
+                SettingsToggleItem(
+                    icon = Icons.Default.Code,
+                    title = "Use Generic Parser",
+                    subtitle = if (useGenericParser)
+                        "Using generic parser for all SMS"
+                    else
+                        "Using bank-specific parsers",
+                    checked = useGenericParser,
+                    onCheckedChange = { settingsViewModel.toggleUseGenericParser(it) }
+                )
             }
 
             // Help Section

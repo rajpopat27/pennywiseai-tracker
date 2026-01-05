@@ -71,6 +71,9 @@ class SettingsViewModel @Inject constructor(
     // Bypass confirmation for scans state
     val isBypassConfirmationForScans = userPreferencesRepository.isBypassConfirmationForScansEnabled
 
+    // Generic parser state
+    val useGenericParser = userPreferencesRepository.useGenericParser
+
     // Unrecognized SMS state
     val unreportedSmsCount = unrecognizedSmsRepository.getUnreportedCount()
         .stateIn(
@@ -114,6 +117,12 @@ class SettingsViewModel @Inject constructor(
     fun toggleBypassConfirmationForScans(enabled: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.setBypassConfirmationForScans(enabled)
+        }
+    }
+
+    fun toggleUseGenericParser(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setUseGenericParser(enabled)
         }
     }
 

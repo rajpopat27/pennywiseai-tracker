@@ -78,8 +78,8 @@ fun MainScreen(
                     else -> "Fintrace"
                 },
                 showBackButton = currentRoute in listOf("settings", "subscriptions", "transactions", "categories", "unrecognized_sms", "manage_accounts", "add_account", "faq"),
-                showSettingsButton = currentRoute !in listOf("settings", "categories", "unrecognized_sms", "manage_accounts", "add_account", "faq", "pending"),
-                showSyncButton = currentRoute !in listOf("settings", "categories", "unrecognized_sms", "manage_accounts", "add_account", "faq", "pending"),
+                showSettingsButton = currentRoute !in listOf("settings", "categories", "unrecognized_sms", "manage_accounts", "add_account", "faq", "pending", "analytics"),
+                showSyncButton = currentRoute !in listOf("settings", "categories", "unrecognized_sms", "manage_accounts", "add_account", "faq", "pending", "analytics"),
                 onBackClick = { navController.popBackStack() },
                 onSettingsClick = { navController.navigate("settings") },
                 onSyncClick = { homeViewModel.scanSmsMessages() }
