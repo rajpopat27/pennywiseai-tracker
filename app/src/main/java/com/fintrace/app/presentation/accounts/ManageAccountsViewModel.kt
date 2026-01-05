@@ -223,6 +223,20 @@ class ManageAccountsViewModel @Inject constructor(
                     defaultCashbackPercent = cashbackToUse
                 )
             )
+
+            // Apply retroactive cashback to existing transactions
+            if (cashbackToUse != null && cashbackToUse > BigDecimal.ZERO) {
+                val updatedCount = transactionRepository.applyRetroactiveCashback(
+                    bankName,
+                    accountLast4,
+                    cashbackToUse.toDouble()
+                )
+                if (updatedCount > 0) {
+                    _uiState.update { it.copy(successMessage = "Balance updated. Cashback applied to $updatedCount transactions.") }
+                    delay(3000)
+                    _uiState.update { it.copy(successMessage = null) }
+                }
+            }
         }
     }
     
@@ -245,6 +259,20 @@ class ManageAccountsViewModel @Inject constructor(
                     defaultCashbackPercent = cashbackToUse
                 )
             )
+
+            // Apply retroactive cashback to existing transactions
+            if (cashbackToUse != null && cashbackToUse > BigDecimal.ZERO) {
+                val updatedCount = transactionRepository.applyRetroactiveCashback(
+                    bankName,
+                    accountLast4,
+                    cashbackToUse.toDouble()
+                )
+                if (updatedCount > 0) {
+                    _uiState.update { it.copy(successMessage = "Credit card updated. Cashback applied to $updatedCount transactions.") }
+                    delay(3000)
+                    _uiState.update { it.copy(successMessage = null) }
+                }
+            }
         }
     }
     

@@ -81,6 +81,8 @@ opencsv = { module = "com.opencsv:opencsv", version.ref = "opencsv" }
 review = { module = "com.google.android.play:review", version.ref = "review" }
 review-ktx = { module = "com.google.android.play:review-ktx", version.ref = "reviewKtx" }
 tasks-genai = { module = "com.google.mediapipe:tasks-genai", version.ref = "tasksGenai" }
+vico-compose-m3 = { module = "com.patrykandpatrick.vico:compose-m3", version = "2.0.0-alpha.19" }
+vico-core = { module = "com.patrykandpatrick.vico:core", version = "2.0.0-alpha.19" }
 vision-internal-vkp = { group = "com.google.mlkit", name = "vision-internal-vkp", version.ref = "visionInternalVkp" }
 
 [plugins]

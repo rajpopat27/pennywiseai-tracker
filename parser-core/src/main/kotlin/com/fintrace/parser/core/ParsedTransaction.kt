@@ -23,13 +23,10 @@ data class ParsedTransaction(
 ) {
     fun generateTransactionId(): String {
         val normalizedAmount = amount.setScale(2, java.math.RoundingMode.HALF_UP)
-        // Use SMS body hash for reliable deduplication across different timestamp sources
-        // (BroadcastReceiver uses SC timestamp, ContentProvider uses device timestamp)
-        val smsBodyHash = MessageDigest.getInstance("MD5")
-            .digest(smsBody.toByteArray())
-            .joinToString("") { "%02x".format(it) }
-            .take(16) // First 16 chars of SMS body hash
-        val data = "$sender|$normalizedAmount|$smsBodyHash"
+        // Include timestamp for reliable deduplication - same amount on different days should be different transactions
+        // Normalize timestamp to minute precision to handle minor time differences between sources
+        val normalizedTimestamp = (timestamp / 60000) * 60000 // Round to nearest minute
+        val data = "$sender|$normalizedAmount|$normalizedTimestamp|$smsBody"
         return MessageDigest.getInstance("MD5")
             .digest(data.toByteArray())
             .joinToString("") { "%02x".format(it) }

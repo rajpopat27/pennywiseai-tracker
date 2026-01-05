@@ -21,7 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.fintrace.app.data.database.entity.TransactionEntity
 import com.fintrace.app.data.database.entity.TransactionType
-import com.fintrace.app.ui.components.CategoryChip
+import com.fintrace.app.ui.components.CategoryIcon
 import com.fintrace.app.utils.CurrencyFormatter
 import java.math.BigDecimal
 import java.time.format.DateTimeFormatter
@@ -83,9 +83,9 @@ fun TransactionListItem(
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                CategoryChip(
-                    category = transaction.category ?: "Other",
-                    showLabel = false
+                CategoryIcon(
+                    category = transaction.category ?: "Others",
+                    size = if (config.compact) 20.dp else 24.dp
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))

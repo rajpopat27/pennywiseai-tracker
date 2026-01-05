@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -37,6 +38,7 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -71,6 +73,7 @@ fun PendingTransactionsScreen(
     val categories by viewModel.categories.collectAsStateWithLifecycle()
     val accounts by viewModel.accounts.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val estimatedCashback by viewModel.estimatedCashback.collectAsStateWithLifecycle()
     val currentAccountCashback by viewModel.currentAccountCashback.collectAsStateWithLifecycle()
 
@@ -88,6 +91,9 @@ fun PendingTransactionsScreen(
                 }
                 is PendingTransactionsViewModel.PendingTransactionEvent.AllConfirmed -> {
                     snackbarHostState.showSnackbar("${event.count} transactions saved")
+                }
+                is PendingTransactionsViewModel.PendingTransactionEvent.TransactionAlreadyAdded -> {
+                    snackbarHostState.showSnackbar("Transaction already added")
                 }
                 is PendingTransactionsViewModel.PendingTransactionEvent.Error -> {
                     snackbarHostState.showSnackbar(event.message)
@@ -176,47 +182,51 @@ fun PendingTransactionsScreen(
             }
         }
     ) { innerPadding ->
-        if (pendingTransactions.isEmpty()) {
-            // Empty state
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = { viewModel.refreshPendingTransactions() },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            if (pendingTransactions.isEmpty()) {
+                // Empty state
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "No Pending Transactions",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(Spacing.sm))
-                    Text(
-                        text = "All transactions have been reviewed",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "No Pending Transactions",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(Spacing.sm))
+                        Text(
+                            text = "All transactions have been reviewed",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentPadding = PaddingValues(Dimensions.Padding.content),
-                verticalArrangement = Arrangement.spacedBy(Spacing.sm)
-            ) {
-                items(
-                    items = pendingTransactions,
-                    key = { it.id }
-                ) { pending ->
-                    SwipeablePendingTransactionItem(
-                        pending = pending,
-                        onClick = { viewModel.selectPending(pending) },
-                        onDismiss = { viewModel.rejectPending(pending.id) }
-                    )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(Dimensions.Padding.content),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+                ) {
+                    items(
+                        items = pendingTransactions,
+                        key = { it.id }
+                    ) { pending ->
+                        SwipeablePendingTransactionItem(
+                            pending = pending,
+                            onClick = { viewModel.selectPending(pending) },
+                            onDismiss = { viewModel.rejectPending(pending.id) }
+                        )
+                    }
                 }
             }
         }
@@ -237,6 +247,7 @@ fun PendingTransactionsContent(
     val categories by viewModel.categories.collectAsStateWithLifecycle()
     val accounts by viewModel.accounts.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val estimatedCashback by viewModel.estimatedCashback.collectAsStateWithLifecycle()
     val currentAccountCashback by viewModel.currentAccountCashback.collectAsStateWithLifecycle()
 
@@ -254,6 +265,9 @@ fun PendingTransactionsContent(
                 }
                 is PendingTransactionsViewModel.PendingTransactionEvent.AllConfirmed -> {
                     snackbarHostState.showSnackbar("${event.count} transactions saved")
+                }
+                is PendingTransactionsViewModel.PendingTransactionEvent.TransactionAlreadyAdded -> {
+                    snackbarHostState.showSnackbar("Transaction already added")
                 }
                 is PendingTransactionsViewModel.PendingTransactionEvent.Error -> {
                     snackbarHostState.showSnackbar(event.message)
@@ -285,74 +299,80 @@ fun PendingTransactionsContent(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (pendingTransactions.isEmpty()) {
-            // Empty state
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = { viewModel.refreshPendingTransactions() },
+            modifier = Modifier.fillMaxSize()
+        ) {
+            if (pendingTransactions.isEmpty()) {
+                // Empty state
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "No Pending Transactions",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(Spacing.sm))
-                    Text(
-                        text = "All transactions have been reviewed",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        } else {
-            Column(modifier = Modifier.fillMaxSize()) {
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(Dimensions.Padding.content),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.sm)
-                ) {
-                    items(
-                        items = pendingTransactions,
-                        key = { it.id }
-                    ) { pending ->
-                        SwipeablePendingTransactionItem(
-                            pending = pending,
-                            onClick = { viewModel.selectPending(pending) },
-                            onDismiss = { viewModel.rejectPending(pending.id) }
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "No Pending Transactions",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(Spacing.sm))
+                        Text(
+                            text = "All transactions have been reviewed",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
+            } else {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(Dimensions.Padding.content),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+                    ) {
+                        items(
+                            items = pendingTransactions,
+                            key = { it.id }
+                        ) { pending ->
+                            SwipeablePendingTransactionItem(
+                                pending = pending,
+                                onClick = { viewModel.selectPending(pending) },
+                                onDismiss = { viewModel.rejectPending(pending.id) }
+                            )
+                        }
+                    }
 
-                // Confirm all button at bottom
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(Dimensions.Padding.content)
-                ) {
-                    Button(
-                        onClick = viewModel::confirmAll,
+                    // Confirm all button at bottom
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        enabled = !isLoading
+                            .padding(Dimensions.Padding.content)
                     ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Default.CheckCircle,
-                                contentDescription = null
-                            )
-                            Spacer(modifier = Modifier.width(Spacing.sm))
-                            Text("Confirm All (${pendingTransactions.size})")
+                        Button(
+                            onClick = viewModel::confirmAll,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            enabled = !isLoading
+                        ) {
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = null
+                                )
+                                Spacer(modifier = Modifier.width(Spacing.sm))
+                                Text("Confirm All (${pendingTransactions.size})")
+                            }
                         }
                     }
                 }

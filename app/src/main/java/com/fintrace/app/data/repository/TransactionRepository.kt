@@ -129,6 +129,12 @@ class TransactionRepository @Inject constructor(
     // Helper method to check if transaction exists by hash
     suspend fun getTransactionByHash(transactionHash: String): TransactionEntity? =
         transactionDao.getTransactionByHash(transactionHash)
+
+    // Check if a transaction with the given hash exists (and is not deleted)
+    suspend fun existsByHash(transactionHash: String): Boolean {
+        val existing = transactionDao.getTransactionByHash(transactionHash)
+        return existing != null && !existing.isDeleted
+    }
     
     suspend fun undoDeleteTransaction(transaction: TransactionEntity) {
         transactionDao.updateTransaction(transaction.copy(isDeleted = false))

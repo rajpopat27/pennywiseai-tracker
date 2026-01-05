@@ -69,9 +69,9 @@ class TransactionProcessor @Inject constructor(
             // Step 2: Apply Merchant Mapping (if not preserving user category)
             var processedEntity = entity
             if (!config.preserveUserCategory && entity.merchantName != null) {
-                val mapping = merchantMappingRepository.getMappingForMerchant(entity.merchantName)
-                if (mapping != null) {
-                    processedEntity = processedEntity.copy(category = mapping.category)
+                val category = merchantMappingRepository.getCategoryForMerchant(entity.merchantName)
+                if (category != null) {
+                    processedEntity = processedEntity.copy(category = category)
                 }
             }
 
@@ -139,7 +139,7 @@ class TransactionProcessor @Inject constructor(
         }
     }
 
-    private data class CashbackInfo(val percent: Double, val amount: BigDecimal)
+    private data class CashbackInfo(val percent: BigDecimal, val amount: BigDecimal)
 
     private suspend fun applyCashback(
         entity: TransactionEntity,
@@ -153,7 +153,7 @@ class TransactionProcessor @Inject constructor(
         // Custom cashback for this transaction only
         if (config.customCashbackPercent != null) {
             val amount = entity.amount * config.customCashbackPercent / BigDecimal(100)
-            return CashbackInfo(config.customCashbackPercent.toDouble(), amount)
+            return CashbackInfo(config.customCashbackPercent, amount)
         }
 
         // Try to get default cashback from account
@@ -167,7 +167,7 @@ class TransactionProcessor @Inject constructor(
 
         return if (cashbackPercent != null && cashbackPercent > BigDecimal.ZERO) {
             val amount = entity.amount * cashbackPercent / BigDecimal(100)
-            CashbackInfo(cashbackPercent.toDouble(), amount)
+            CashbackInfo(cashbackPercent, amount)
         } else {
             null
         }
@@ -179,12 +179,12 @@ class TransactionProcessor @Inject constructor(
     ) {
         // Use pending entity's bank/account info for balance update
         val bankName = pending.bankName ?: return
-        val accountLast4 = pending.accountLast4 ?: return
+        val accountNumber = pending.accountNumber ?: return
         val newBalance = pending.balanceAfter ?: return
 
         accountBalanceRepository.insertBalanceUpdate(
             bankName = bankName,
-            accountLast4 = accountLast4,
+            accountLast4 = accountNumber,
             balance = newBalance,
             timestamp = transaction.dateTime,
             smsSource = pending.smsBody,

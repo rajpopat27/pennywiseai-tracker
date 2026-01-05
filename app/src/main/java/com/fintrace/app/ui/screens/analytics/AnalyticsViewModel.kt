@@ -2,6 +2,8 @@ package com.fintrace.app.ui.screens.analytics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fintrace.app.data.repository.BudgetRepository
+import com.fintrace.app.data.repository.BudgetWithSpending
 import com.fintrace.app.data.repository.TransactionRepository
 import com.fintrace.app.presentation.common.TimePeriod
 import com.fintrace.app.presentation.common.TransactionTypeFilter
@@ -15,11 +17,37 @@ import java.time.LocalDate
 import java.time.YearMonth
 import javax.inject.Inject
 
+/**
+ * Enum representing the tabs in the Analytics screen.
+ */
+enum class AnalyticsTab(val title: String) {
+    OVERVIEW("Overview"),
+    BUDGET("Budget"),
+    INSIGHTS("Insights")
+}
+
 @HiltViewModel
 class AnalyticsViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
+    private val budgetRepository: BudgetRepository,
     private val savedStateHandle: androidx.lifecycle.SavedStateHandle
 ) : ViewModel() {
+
+    // Tab state
+    private val _selectedTab = MutableStateFlow(AnalyticsTab.OVERVIEW)
+    val selectedTab: StateFlow<AnalyticsTab> = _selectedTab.asStateFlow()
+
+    fun selectTab(tab: AnalyticsTab) {
+        _selectedTab.value = tab
+    }
+
+    // Budget state for Budget tab
+    val budgetWithSpending: StateFlow<BudgetWithSpending?> = budgetRepository.getBudgetWithSpending()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
 
     private val _selectedPeriod = MutableStateFlow(TimePeriod.THIS_MONTH)
     val selectedPeriod: StateFlow<TimePeriod> = _selectedPeriod.asStateFlow()
@@ -363,6 +391,24 @@ class AnalyticsViewModel @Inject constructor(
         // Always reset to a valid period to prevent CUSTOM with null dates
         if (_selectedPeriod.value == TimePeriod.CUSTOM) {
             _selectedPeriod.value = TimePeriod.THIS_MONTH
+        }
+    }
+
+    /**
+     * Sets the monthly budget amount.
+     */
+    fun setBudget(amount: java.math.BigDecimal, currency: String = "INR") {
+        viewModelScope.launch {
+            budgetRepository.setBudget(amount, currency)
+        }
+    }
+
+    /**
+     * Deletes the current budget.
+     */
+    fun deleteBudget() {
+        viewModelScope.launch {
+            budgetRepository.deleteBudget()
         }
     }
 }

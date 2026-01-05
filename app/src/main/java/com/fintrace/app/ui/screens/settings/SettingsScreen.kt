@@ -46,6 +46,8 @@ import com.fintrace.app.ui.components.SettingsToggleItem
 import com.fintrace.app.ui.theme.Dimensions
 import com.fintrace.app.ui.theme.Spacing
 import com.fintrace.app.ui.viewmodel.ThemeViewModel
+import com.fintrace.app.ui.components.dialogs.BudgetInputDialog
+import com.fintrace.app.utils.CurrencyFormatter
 import com.fintrace.app.data.repository.ScanPeriod
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,7 +71,9 @@ fun SettingsScreen(
     val smsScanAllTime by settingsViewModel.smsScanAllTime.collectAsStateWithLifecycle(initialValue = false)
     val importExportMessage by settingsViewModel.importExportMessage.collectAsStateWithLifecycle()
     val exportedBackupFile by settingsViewModel.exportedBackupFile.collectAsStateWithLifecycle()
+    val budgetWithSpending by settingsViewModel.budgetWithSpending.collectAsStateWithLifecycle()
     var showSmsScanDialog by remember { mutableStateOf(false) }
+    var showBudgetDialog by remember { mutableStateOf(false) }
     var showExportOptionsDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     
@@ -159,6 +163,41 @@ fun SettingsScreen(
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            // Budget Section
+            SectionHeader(title = "Budget")
+
+            SettingsCard(
+                onClick = { showBudgetDialog = true }
+            ) {
+                SettingsItem(
+                    icon = Icons.Default.AccountBalance,
+                    title = "Monthly Budget",
+                    subtitle = if (budgetWithSpending != null) {
+                        "${budgetWithSpending!!.percentUsed.toInt()}% used this month"
+                    } else {
+                        "Set a spending limit for the month"
+                    },
+                    trailing = {
+                        if (budgetWithSpending != null) {
+                            Text(
+                                text = CurrencyFormatter.formatCurrency(
+                                    budgetWithSpending!!.budget.amount,
+                                    budgetWithSpending!!.budget.currency
+                                ),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        } else {
+                            Text(
+                                text = "Not set",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 )
             }
 
@@ -462,6 +501,24 @@ fun SettingsScreen(
                     Text("Cancel")
                 }
             }
+        )
+    }
+
+    // Budget Dialog
+    if (showBudgetDialog) {
+        BudgetInputDialog(
+            currentAmount = budgetWithSpending?.budget?.amount,
+            onConfirm = { amount ->
+                settingsViewModel.setBudget(amount)
+                showBudgetDialog = false
+            },
+            onDelete = if (budgetWithSpending != null) {
+                {
+                    settingsViewModel.deleteBudget()
+                    showBudgetDialog = false
+                }
+            } else null,
+            onDismiss = { showBudgetDialog = false }
         )
     }
 }

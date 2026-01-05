@@ -200,17 +200,22 @@ class FilterStateManager(
     fun getDateRange(): Pair<LocalDate, LocalDate> {
         val now = LocalDate.now()
         return when (_period.value) {
-            TimePeriod.TODAY -> Pair(now, now)
-            TimePeriod.THIS_WEEK -> Pair(now.minusDays(now.dayOfWeek.value.toLong() - 1), now)
             TimePeriod.THIS_MONTH -> Pair(now.withDayOfMonth(1), now)
             TimePeriod.LAST_MONTH -> {
                 val lastMonth = now.minusMonths(1)
                 Pair(lastMonth.withDayOfMonth(1), lastMonth.withDayOfMonth(lastMonth.lengthOfMonth()))
             }
-            TimePeriod.LAST_3_MONTHS -> Pair(now.minusMonths(3), now)
-            TimePeriod.LAST_6_MONTHS -> Pair(now.minusMonths(6), now)
-            TimePeriod.THIS_YEAR -> Pair(now.withDayOfYear(1), now)
-            TimePeriod.ALL_TIME -> Pair(LocalDate.of(2000, 1, 1), now)
+            TimePeriod.CURRENT_FY -> {
+                // Indian Financial Year: April 1 to March 31
+                val currentMonth = now.monthValue
+                val fyStart = if (currentMonth >= 4) {
+                    LocalDate.of(now.year, 4, 1)  // Apr 1 of current year
+                } else {
+                    LocalDate.of(now.year - 1, 4, 1)  // Apr 1 of previous year
+                }
+                Pair(fyStart, now)
+            }
+            TimePeriod.ALL -> Pair(LocalDate.of(2000, 1, 1), now)
             TimePeriod.CUSTOM -> _customDateRange.value ?: Pair(now.withDayOfMonth(1), now)
         }
     }

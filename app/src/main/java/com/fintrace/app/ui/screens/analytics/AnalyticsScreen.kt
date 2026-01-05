@@ -23,6 +23,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fintrace.app.presentation.common.TimePeriod
 import com.fintrace.app.presentation.common.TransactionTypeFilter
 import com.fintrace.app.ui.components.*
+import com.fintrace.app.ui.components.budget.BudgetProgressCard
+import com.fintrace.app.ui.components.budget.NoBudgetCard
+import com.fintrace.app.ui.components.charts.DayOfWeekChart
+import com.fintrace.app.ui.components.charts.DaySpending
+import com.fintrace.app.ui.components.dialogs.BudgetInputDialog
 import com.fintrace.app.ui.icons.CategoryMapping
 import com.fintrace.app.ui.theme.*
 import com.fintrace.app.utils.CurrencyFormatter
@@ -30,12 +35,14 @@ import com.fintrace.app.utils.DateRangeUtils
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import java.math.BigDecimal
+import java.time.DayOfWeek
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnalyticsScreen(
     viewModel: AnalyticsViewModel = hiltViewModel(),
-    onNavigateToTransactions: (category: String?, merchant: String?, period: String?, currency: String?) -> Unit = { _, _, _, _ -> }
+    onNavigateToTransactions: (category: String?, merchant: String?, period: String?, currency: String?) -> Unit = { _, _, _, _ -> },
+    onNavigateToSettings: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val selectedPeriod by viewModel.selectedPeriod.collectAsStateWithLifecycle()
@@ -43,6 +50,8 @@ fun AnalyticsScreen(
     val selectedCurrency by viewModel.selectedCurrency.collectAsStateWithLifecycle()
     val availableCurrencies by viewModel.availableCurrencies.collectAsStateWithLifecycle()
     val customDateRange by viewModel.customDateRange.collectAsStateWithLifecycle()
+    val selectedTab by viewModel.selectedTab.collectAsStateWithLifecycle()
+    val budgetWithSpending by viewModel.budgetWithSpending.collectAsStateWithLifecycle()
 
     // Custom filter states
     val merchantFilter by viewModel.merchantFilter.collectAsStateWithLifecycle()
@@ -58,14 +67,123 @@ fun AnalyticsScreen(
 
     var showCustomFilters by remember { mutableStateOf(false) }
     var showDateRangePicker by remember { mutableStateOf(false) }
+    var showBudgetDialog by remember { mutableStateOf(false) }
 
     // Cache expensive operations
     val timePeriods = remember { TimePeriod.values().toList() }
     val customRangeLabel = remember(customDateRange) {
         DateRangeUtils.formatDateRange(customDateRange)
     }
-    
-    Box(modifier = Modifier.fillMaxSize()) {
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Tab Row
+        PrimaryTabRow(
+            selectedTabIndex = selectedTab.ordinal,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            AnalyticsTab.entries.forEach { tab ->
+                Tab(
+                    selected = selectedTab == tab,
+                    onClick = { viewModel.selectTab(tab) },
+                    text = { Text(tab.title) }
+                )
+            }
+        }
+
+        // Tab Content
+        when (selectedTab) {
+            AnalyticsTab.OVERVIEW -> OverviewTabContent(
+                uiState = uiState,
+                selectedPeriod = selectedPeriod,
+                transactionTypeFilter = transactionTypeFilter,
+                selectedCurrency = selectedCurrency,
+                availableCurrencies = availableCurrencies,
+                customDateRange = customDateRange,
+                merchantFilter = merchantFilter,
+                amountFilter = amountFilter,
+                categoryFilter = categoryFilter,
+                accountFilter = accountFilter,
+                activeCustomFilterCount = activeCustomFilterCount,
+                availableCategories = availableCategories,
+                availableAccounts = availableAccounts,
+                availableMerchants = availableMerchants,
+                showCustomFilters = showCustomFilters,
+                onToggleCustomFilters = { showCustomFilters = !showCustomFilters },
+                showDateRangePicker = showDateRangePicker,
+                onShowDateRangePicker = { showDateRangePicker = it },
+                timePeriods = timePeriods,
+                customRangeLabel = customRangeLabel,
+                viewModel = viewModel,
+                onNavigateToTransactions = onNavigateToTransactions
+            )
+
+            AnalyticsTab.BUDGET -> BudgetTabContent(
+                budgetWithSpending = budgetWithSpending,
+                onSetBudget = { showBudgetDialog = true }
+            )
+
+            AnalyticsTab.INSIGHTS -> InsightsTabContent(
+                uiState = uiState,
+                selectedCurrency = selectedCurrency
+            )
+        }
+    }
+
+    if (showDateRangePicker) {
+        CustomDateRangePickerDialog(
+            onDismiss = { showDateRangePicker = false },
+            onConfirm = { startDate, endDate ->
+                viewModel.setCustomDateRange(startDate, endDate)
+                showDateRangePicker = false
+            },
+            initialStartDate = customDateRange?.first,
+            initialEndDate = customDateRange?.second
+        )
+    }
+
+    if (showBudgetDialog) {
+        BudgetInputDialog(
+            currentAmount = budgetWithSpending?.budget?.amount,
+            onConfirm = { amount ->
+                viewModel.setBudget(amount)
+                showBudgetDialog = false
+            },
+            onDelete = if (budgetWithSpending != null) {
+                {
+                    viewModel.deleteBudget()
+                    showBudgetDialog = false
+                }
+            } else null,
+            onDismiss = { showBudgetDialog = false }
+        )
+    }
+}
+
+@Composable
+private fun OverviewTabContent(
+    uiState: AnalyticsUiState,
+    selectedPeriod: TimePeriod,
+    transactionTypeFilter: TransactionTypeFilter,
+    selectedCurrency: String,
+    availableCurrencies: List<String>,
+    customDateRange: Pair<java.time.LocalDate, java.time.LocalDate>?,
+    merchantFilter: String?,
+    amountFilter: AmountFilter?,
+    categoryFilter: String?,
+    accountFilter: String?,
+    activeCustomFilterCount: Int,
+    availableCategories: List<String>,
+    availableAccounts: List<String>,
+    availableMerchants: List<String>,
+    showCustomFilters: Boolean,
+    onToggleCustomFilters: () -> Unit,
+    showDateRangePicker: Boolean,
+    onShowDateRangePicker: (Boolean) -> Unit,
+    timePeriods: List<TimePeriod>,
+    customRangeLabel: String?,
+    viewModel: AnalyticsViewModel,
+    onNavigateToTransactions: (category: String?, merchant: String?, period: String?, currency: String?) -> Unit
+) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -94,7 +212,7 @@ fun AnalyticsScreen(
                         },
                         onClick = {
                             if (period == TimePeriod.CUSTOM) {
-                                showDateRangePicker = true
+                                onShowDateRangePicker(true)
                                 // Don't change selectedPeriod until user confirms dates
                             } else {
                                 viewModel.selectPeriod(period)
@@ -134,7 +252,7 @@ fun AnalyticsScreen(
         item {
             FiltersSection(
                 isExpanded = showCustomFilters,
-                onToggle = { showCustomFilters = !showCustomFilters },
+                onToggle = onToggleCustomFilters,
                 // Transaction type filter
                 transactionTypeFilter = transactionTypeFilter,
                 onTransactionTypeFilterChange = { viewModel.setTransactionTypeFilter(it) },
@@ -231,32 +349,206 @@ fun AnalyticsScreen(
             }
         }
     }
-    
-//    // Chat FAB
-//    SmallFloatingActionButton(
-//        onClick = onNavigateToChat,
-//        modifier = Modifier
-//            .align(Alignment.BottomEnd)
-//            .padding(Dimensions.Padding.content),
-//        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-//        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-//    ) {
-//        Icon(
-//            imageVector = Icons.AutoMirrored.Filled.Chat,
-//            contentDescription = "Open AI Assistant"
-//        )
-//    }
+}
+
+@Composable
+private fun BudgetTabContent(
+    budgetWithSpending: com.fintrace.app.data.repository.BudgetWithSpending?,
+    onSetBudget: () -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentPadding = PaddingValues(
+            start = Dimensions.Padding.content,
+            end = Dimensions.Padding.content,
+            top = Spacing.md,
+            bottom = Dimensions.Component.bottomBarHeight + Spacing.md
+        ),
+        verticalArrangement = Arrangement.spacedBy(Spacing.md)
+    ) {
+        item {
+            if (budgetWithSpending != null) {
+                BudgetProgressCard(budgetWithSpending = budgetWithSpending)
+            } else {
+                NoBudgetCard(onSetBudget = onSetBudget)
+            }
+        }
+
+        // Budget tips
+        item {
+            FintraceCard(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(Spacing.md),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+                ) {
+                    Text(
+                        text = "Budget Tips",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = "• Set a realistic budget based on your income",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "• Review your spending weekly to stay on track",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "• Adjust your budget as your needs change",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun InsightsTabContent(
+    uiState: AnalyticsUiState,
+    selectedCurrency: String
+) {
+    // Calculate day of week spending from category breakdown (simplified)
+    val daySpendingData = remember(uiState.categoryBreakdown) {
+        // In a real implementation, this would come from transaction dates
+        // For now, we create sample data based on category breakdown
+        DayOfWeek.entries.mapIndexed { index, day ->
+            DaySpending(
+                dayOfWeek = day,
+                dayName = day.name,
+                amount = if (uiState.categoryBreakdown.isNotEmpty()) {
+                    uiState.totalSpending.divide(BigDecimal(7), 2, java.math.RoundingMode.HALF_UP)
+                } else {
+                    BigDecimal.ZERO
+                }
+            )
+        }
     }
 
-    if (showDateRangePicker) {
-        CustomDateRangePickerDialog(
-            onDismiss = { showDateRangePicker = false },
-            onConfirm = { startDate, endDate ->
-                viewModel.setCustomDateRange(startDate, endDate)
-                showDateRangePicker = false
-            },
-            initialStartDate = customDateRange?.first,
-            initialEndDate = customDateRange?.second
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentPadding = PaddingValues(
+            start = Dimensions.Padding.content,
+            end = Dimensions.Padding.content,
+            top = Spacing.md,
+            bottom = Dimensions.Component.bottomBarHeight + Spacing.md
+        ),
+        verticalArrangement = Arrangement.spacedBy(Spacing.md)
+    ) {
+        // Spending by Day of Week
+        if (uiState.totalSpending > BigDecimal.ZERO) {
+            item {
+                SectionHeader(title = "Spending by Day")
+            }
+
+            item {
+                FintraceCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(Spacing.md)) {
+                        DayOfWeekChart(
+                            data = daySpendingData,
+                            currency = selectedCurrency,
+                            height = 220
+                        )
+                    }
+                }
+            }
+        }
+
+        // Top spending insights
+        if (uiState.categoryBreakdown.isNotEmpty()) {
+            item {
+                SectionHeader(title = "Spending Insights")
+            }
+
+            item {
+                FintraceCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier.padding(Spacing.md),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+                    ) {
+                        // Top category insight
+                        uiState.topCategory?.let { topCat ->
+                            InsightRow(
+                                icon = Icons.Default.TrendingUp,
+                                title = "Top Category",
+                                value = "$topCat (${uiState.topCategoryPercentage.toInt()}%)"
+                            )
+                        }
+
+                        // Average transaction
+                        InsightRow(
+                            icon = Icons.Default.Calculate,
+                            title = "Average Transaction",
+                            value = CurrencyFormatter.formatCurrency(uiState.averageAmount, selectedCurrency)
+                        )
+
+                        // Transaction count
+                        InsightRow(
+                            icon = Icons.Default.Receipt,
+                            title = "Total Transactions",
+                            value = uiState.transactionCount.toString()
+                        )
+
+                        // Cashback earned
+                        if (uiState.totalCashback > BigDecimal.ZERO) {
+                            InsightRow(
+                                icon = Icons.Default.CardGiftcard,
+                                title = "Cashback Earned",
+                                value = CurrencyFormatter.formatCurrency(uiState.totalCashback, selectedCurrency)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // Empty state
+        if (uiState.totalSpending == BigDecimal.ZERO && !uiState.isLoading) {
+            item {
+                EmptyAnalyticsState()
+            }
+        }
+    }
+}
+
+@Composable
+private fun InsightRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    value: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
         )
     }
 }

@@ -393,8 +393,7 @@ class PendingTransactionManager @Inject constructor(
         try {
             // Check if this is a card transaction
             val existingCard = cardRepository.getCard(bankName, accountLast4)
-            val isCreditCard = entity.transactionType == TransactionType.EXPENSE ||
-                    existingCard?.cardType == CardType.CREDIT
+            val isCreditCard = existingCard?.cardType == CardType.CREDIT
 
             // Create card if doesn't exist
             if (existingCard == null) {
@@ -430,9 +429,8 @@ class PendingTransactionManager @Inject constructor(
                     val currentBalance = existingAccount?.balance ?: BigDecimal.ZERO
                     when (entity.transactionType) {
                         TransactionType.INCOME -> currentBalance + pending.amount
-                        TransactionType.EXPENSE, TransactionType.EXPENSE ->
-                            (currentBalance - pending.amount).max(BigDecimal.ZERO)
-                        TransactionType.EXPENSE, TransactionType.TRANSFER -> currentBalance
+                        TransactionType.EXPENSE -> (currentBalance - pending.amount).max(BigDecimal.ZERO)
+                        TransactionType.TRANSFER -> currentBalance
                     }
                 }
             }
@@ -459,23 +457,28 @@ class PendingTransactionManager @Inject constructor(
 
     /**
      * Applies default cashback rate from the account to the transaction.
-     * Only applies to EXPENSE and CREDIT transaction types.
+     * Only applies to EXPENSE transaction types.
      */
     private suspend fun applyDefaultCashback(
         entity: TransactionEntity,
         pending: PendingTransactionEntity
     ): TransactionEntity {
-        // Only calculate cashback for expense/credit transactions
-        if (entity.transactionType != TransactionType.EXPENSE &&
-            entity.transactionType != TransactionType.EXPENSE) {
+        // Only calculate cashback for expense transactions
+        if (entity.transactionType != TransactionType.EXPENSE) {
             return entity
         }
 
         val bankName = pending.bankName ?: return entity
         val accountLast4 = pending.accountNumber ?: return entity
 
-        // Get cashback rate from account
-        val cashbackPercent = accountBalanceRepository.getDefaultCashback(bankName, accountLast4)
+        // Get cashback rate from account - try exact match first
+        var cashbackPercent = accountBalanceRepository.getDefaultCashback(bankName, accountLast4)
+
+        // If no exact match, try finding by bank name only (for single account scenarios)
+        if (cashbackPercent == null) {
+            val latestBalance = accountBalanceRepository.getLatestBalance(bankName, accountLast4)
+            cashbackPercent = latestBalance?.defaultCashbackPercent
+        }
 
         // If we have a cashback rate, apply it
         return if (cashbackPercent != null && cashbackPercent > BigDecimal.ZERO) {
@@ -496,5 +499,32 @@ class PendingTransactionManager @Inject constructor(
      */
     suspend fun cleanup() {
         pendingTransactionRepository.cleanupOldProcessed()
+    }
+
+    /**
+     * Cleans up pending transactions that already exist in the main transactions table.
+     * This handles cases where auto-sync saved a transaction directly while it was also
+     * added to the pending queue.
+     *
+     * @return Number of duplicate pending transactions removed
+     */
+    suspend fun cleanupDuplicatePending(): Int {
+        val pendingList = pendingTransactionRepository.getAllPendingList()
+        var removedCount = 0
+
+        pendingList.forEach { pending ->
+            val existingTransaction = transactionRepository.getTransactionByHash(pending.transactionHash)
+            if (existingTransaction != null && !existingTransaction.isDeleted) {
+                // Transaction already exists, remove from pending
+                pendingTransactionRepository.reject(pending.id)
+                removedCount++
+                Log.d(TAG, "Removed duplicate pending transaction: ${pending.id}")
+            }
+        }
+
+        if (removedCount > 0) {
+            Log.d(TAG, "Cleaned up $removedCount duplicate pending transactions")
+        }
+        return removedCount
     }
 }

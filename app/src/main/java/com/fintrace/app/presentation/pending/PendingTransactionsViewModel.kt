@@ -94,9 +94,8 @@ class PendingTransactionsViewModel @Inject constructor(
     ) { pending, accountsList ->
         if (pending == null) return@combine null
 
-        // Only calculate for expense/credit transactions
-        if (pending.transactionType != TransactionType.EXPENSE &&
-            pending.transactionType != TransactionType.EXPENSE) {
+        // Only calculate for expense transactions
+        if (pending.transactionType != TransactionType.EXPENSE) {
             return@combine null
         }
 
@@ -146,6 +145,7 @@ class PendingTransactionsViewModel @Inject constructor(
         data class TransactionConfirmed(val transactionId: Long) : PendingTransactionEvent()
         data class TransactionRejected(val pendingId: Long) : PendingTransactionEvent()
         data class AllConfirmed(val count: Int) : PendingTransactionEvent()
+        data class TransactionAlreadyAdded(val pendingId: Long) : PendingTransactionEvent()
         data class Error(val message: String) : PendingTransactionEvent()
     }
 
@@ -179,16 +179,28 @@ class PendingTransactionsViewModel @Inject constructor(
         _editedPending.value = null
     }
 
+    // Refreshing state for pull-to-refresh
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
     /**
-     * Refresh pending transactions - the list is reactive and auto-updates,
-     * this method exists for the refresh button in the UI.
-     * The Flow-based pending transactions list will automatically reflect any changes.
+     * Refresh pending transactions and clean up any that already exist in transactions table.
+     * Called by pull-to-refresh or refresh button.
      */
     fun refreshPendingTransactions() {
-        // The pending transactions list is backed by a Flow that automatically updates
-        // when the database changes. This method is a no-op but provides
-        // a callback for the refresh button in the UI.
-        Log.d(TAG, "Refresh requested - list is reactive and auto-updates")
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            try {
+                val cleanedCount = pendingTransactionManager.cleanupDuplicatePending()
+                if (cleanedCount > 0) {
+                    Log.d(TAG, "Cleaned up $cleanedCount duplicate pending transactions")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during refresh", e)
+            } finally {
+                _isRefreshing.value = false
+            }
+        }
     }
 
     /**
@@ -230,7 +242,8 @@ class PendingTransactionsViewModel @Inject constructor(
     }
 
     /**
-     * Confirms the currently selected pending transaction
+     * Confirms the currently selected pending transaction.
+     * If the transaction already exists, shows "already added" and removes from pending.
      */
     fun confirmSelected() {
         val original = _selectedPending.value ?: return
@@ -239,6 +252,16 @@ class PendingTransactionsViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
+                // Check if transaction already exists
+                if (transactionRepository.existsByHash(original.transactionHash)) {
+                    // Transaction already exists, just remove from pending
+                    pendingTransactionManager.rejectTransaction(original.id)
+                    Log.d(TAG, "Transaction already exists, removed from pending: ${original.id}")
+                    _events.emit(PendingTransactionEvent.TransactionAlreadyAdded(original.id))
+                    clearSelection()
+                    return@launch
+                }
+
                 val transactionId = pendingTransactionManager.confirmTransaction(original, edited)
                 if (transactionId != -1L) {
                     Log.d(TAG, "Transaction confirmed: $transactionId")

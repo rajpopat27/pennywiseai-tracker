@@ -190,11 +190,11 @@ interface TransactionDao {
 
     /**
      * Updates cashback for transactions that don't already have cashback set.
-     * Only affects EXPENSE and CREDIT transactions for a specific account.
+     * Only affects EXPENSE transactions for a specific account.
      * Updates transactions where cashback_amount is NULL or 0.
      * Matches transactions where:
      * - bank_name matches (case-insensitive) OR bank_name is NULL
-     * - account_number equals the given value OR is NULL (for same bank)
+     * - account_number matches exactly, ends with last4, OR account_number is NULL (for same bank)
      */
     @Query("""
         UPDATE transactions
@@ -202,8 +202,11 @@ interface TransactionDao {
             cashback_amount = (amount * :cashbackPercent / 100)
         WHERE is_deleted = 0
         AND (LOWER(bank_name) = LOWER(:bankName) OR bank_name IS NULL)
-        AND (account_number = :accountLast4 OR account_number IS NULL)
-        AND (transaction_type = 'EXPENSE' OR transaction_type = 'CREDIT')
+        AND (account_number = :accountLast4
+             OR account_number LIKE '%' || :accountLast4
+             OR :accountLast4 LIKE '%' || account_number
+             OR account_number IS NULL)
+        AND transaction_type = 'EXPENSE'
         AND (cashback_amount IS NULL OR cashback_amount = 0)
     """)
     suspend fun applyRetroactiveCashback(

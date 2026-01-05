@@ -23,10 +23,13 @@ import com.fintrace.app.data.backup.BackupImporter
 import com.fintrace.app.data.backup.ExportResult
 import com.fintrace.app.data.backup.ImportResult
 import com.fintrace.app.data.backup.ImportStrategy
+import com.fintrace.app.data.repository.BudgetRepository
+import com.fintrace.app.data.repository.BudgetWithSpending
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import java.net.URLEncoder
 import java.io.File
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @HiltViewModel
@@ -35,6 +38,7 @@ class SettingsViewModel @Inject constructor(
     private val userPreferencesRepository: UserPreferencesRepository,
     private val unrecognizedSmsRepository: UnrecognizedSmsRepository,
     private val appPreferencesRepository: AppPreferencesRepository,
+    private val budgetRepository: BudgetRepository,
     private val backupExporter: BackupExporter,
     private val backupImporter: BackupImporter
 ) : ViewModel() {
@@ -74,6 +78,26 @@ class SettingsViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = 0
         )
+
+    // Budget state
+    val budgetWithSpending = budgetRepository.getBudgetWithSpending()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
+
+    fun setBudget(amount: BigDecimal, currency: String = "INR") {
+        viewModelScope.launch {
+            budgetRepository.setBudget(amount, currency)
+        }
+    }
+
+    fun deleteBudget() {
+        viewModelScope.launch {
+            budgetRepository.deleteBudget()
+        }
+    }
 
     fun toggleDeveloperMode(enabled: Boolean) {
         viewModelScope.launch {

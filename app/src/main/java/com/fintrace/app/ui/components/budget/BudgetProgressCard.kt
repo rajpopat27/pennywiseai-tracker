@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.fintrace.app.data.repository.BudgetWithSpending
 import com.fintrace.app.ui.components.FintraceCard
+import com.fintrace.app.ui.theme.Spacing
 import com.fintrace.app.utils.CurrencyFormatter
 
 /**
@@ -46,7 +47,7 @@ fun BudgetProgressCard(
 
     FintraceCard(modifier = modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(Spacing.md)
         ) {
             // Title row
             Row(
@@ -65,7 +66,7 @@ fun BudgetProgressCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Spacing.sm))
 
             // Progress bar
             LinearProgressIndicator(
@@ -78,7 +79,7 @@ fun BudgetProgressCard(
                 trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Spacing.md))
 
             // Amounts row
             Row(
@@ -148,7 +149,7 @@ fun NoBudgetCard(
 ) {
     FintraceCard(modifier = modifier.fillMaxWidth()) {
         Column(
-            modifier = Modifier.padding(24.dp),
+            modifier = Modifier.padding(Spacing.lg),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
@@ -157,14 +158,14 @@ fun NoBudgetCard(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(Spacing.sm))
 
             Text(
                 text = "No Budget Set",
                 style = MaterialTheme.typography.titleMedium
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(Spacing.xs))
 
             Text(
                 text = "Set a monthly budget to track your spending",
@@ -172,7 +173,7 @@ fun NoBudgetCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Spacing.md))
 
             Button(onClick = onSetBudget) {
                 Text("Set Budget")

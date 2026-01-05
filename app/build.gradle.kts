@@ -224,5 +224,10 @@ dependencies {
     
     // OpenCSV for CSV export
     implementation(libs.opencsv)
+
+    // Vico Charts for analytics visualizations
+    implementation(libs.vico.compose.m3)
+    implementation(libs.vico.core)
+
     testImplementation(kotlin("test"))
 }
