@@ -1,8 +1,8 @@
-package com.pennywiseai.parser.core.bank
+package com.fintrace.parser.core.bank
 
-import com.pennywiseai.parser.core.test.ExpectedTransaction
-import com.pennywiseai.parser.core.test.ParserTestCase
-import com.pennywiseai.parser.core.test.ParserTestUtils
+import com.fintrace.parser.core.test.ExpectedTransaction
+import com.fintrace.parser.core.test.ParserTestCase
+import com.fintrace.parser.core.test.ParserTestUtils
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 
@@ -36,7 +36,7 @@ T&C. Ignore if paid""",
                 expected = ExpectedTransaction(
                     amount = BigDecimal("500.00"),
                     currency = "INR",
-                    type = com.pennywiseai.parser.core.TransactionType.EXPENSE,
+                    type = com.fintrace.parser.core.TransactionType.EXPENSE,
                     accountLast4 = "1234",
                     reference = "123456789012"
                 )

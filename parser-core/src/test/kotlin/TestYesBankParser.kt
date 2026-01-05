@@ -1,8 +1,8 @@
-import com.pennywiseai.parser.core.TransactionType
-import com.pennywiseai.parser.core.bank.YesBankParser
-import com.pennywiseai.parser.core.test.ExpectedTransaction
-import com.pennywiseai.parser.core.test.ParserTestCase
-import com.pennywiseai.parser.core.test.ParserTestUtils
+import com.fintrace.parser.core.TransactionType
+import com.fintrace.parser.core.bank.YesBankParser
+import com.fintrace.parser.core.test.ExpectedTransaction
+import com.fintrace.parser.core.test.ParserTestCase
+import com.fintrace.parser.core.test.ParserTestUtils
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 
@@ -26,7 +26,7 @@ class YesBankParserTest {
                 expected = ExpectedTransaction(
                     amount = BigDecimal("404.36"),
                     currency = "INR",
-                    type = TransactionType.CREDIT,
+                    type = TransactionType.EXPENSE,
                     merchant = "C N S FUEL PORT",
                     accountLast4 = "3349",
                     creditLimit = BigDecimal("211476.24"),
@@ -40,7 +40,7 @@ class YesBankParserTest {
                 expected = ExpectedTransaction(
                     amount = BigDecimal("56.00"),
                     currency = "INR",
-                    type = TransactionType.CREDIT,
+                    type = TransactionType.EXPENSE,
                     merchant = "S B ENTERPRISES",
                     accountLast4 = "3349",
                     creditLimit = BigDecimal("211880.60"),
@@ -54,7 +54,7 @@ class YesBankParserTest {
                 expected = ExpectedTransaction(
                     amount = BigDecimal("24.00"),
                     currency = "INR",
-                    type = TransactionType.CREDIT,
+                    type = TransactionType.EXPENSE,
                     merchant = "MOHAMMED AKRAM",
                     accountLast4 = "3349",
                     creditLimit = BigDecimal("212012.60"),
@@ -68,7 +68,7 @@ class YesBankParserTest {
                 expected = ExpectedTransaction(
                     amount = BigDecimal("250.00"),
                     currency = "INR",
-                    type = TransactionType.CREDIT,
+                    type = TransactionType.EXPENSE,
                     merchant = "SURAKSHAA HEALTHCA",
                     accountLast4 = "3349",
                     creditLimit = BigDecimal("212036.60"),

@@ -11,8 +11,8 @@ Remove features that are being dropped to simplify the app.
 
 ### 6.1.1 Update TransactionType Enum
 **Files:**
-- `parser-core/src/main/kotlin/com/pennywiseai/parser/core/TransactionType.kt`
-- `app/src/main/java/com/pennywiseai/tracker/data/database/entity/TransactionType.kt`
+- `parser-core/src/main/kotlin/com/fintrace/parser/core/TransactionType.kt`
+- `app/src/main/java/com/fintrace/app/data/database/entity/TransactionType.kt`
 
 ```kotlin
 // BEFORE

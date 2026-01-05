@@ -11,7 +11,7 @@ This phase implements the complete budget feature including data model, reposito
 ## 4.1 Create Budget Data Model
 
 ### Task: Create budget entities
-**New File:** `app/src/main/java/com/pennywiseai/tracker/data/database/entity/BudgetEntity.kt`
+**New File:** `app/src/main/java/com/fintrace/app/data/database/entity/BudgetEntity.kt`
 
 ```kotlin
 @Entity(tableName = "budgets")
@@ -44,7 +44,7 @@ enum class BudgetPeriod {
 }
 ```
 
-**New File:** `app/src/main/java/com/pennywiseai/tracker/data/database/entity/BudgetHistoryEntity.kt`
+**New File:** `app/src/main/java/com/fintrace/app/data/database/entity/BudgetHistoryEntity.kt`
 
 ```kotlin
 @Entity(
@@ -100,7 +100,7 @@ data class BudgetHistoryEntity(
 ## 4.2 Create Budget DAO
 
 ### Task: Create database access object
-**New File:** `app/src/main/java/com/pennywiseai/tracker/data/database/dao/BudgetDao.kt`
+**New File:** `app/src/main/java/com/fintrace/app/data/database/dao/BudgetDao.kt`
 
 ```kotlin
 @Dao
@@ -155,7 +155,7 @@ interface BudgetDao {
 ## 4.3 Create Budget Repository
 
 ### Task: Create repository for budget operations
-**New File:** `app/src/main/java/com/pennywiseai/tracker/data/repository/BudgetRepository.kt`
+**New File:** `app/src/main/java/com/fintrace/app/data/repository/BudgetRepository.kt`
 
 ```kotlin
 interface BudgetRepository {
@@ -190,7 +190,7 @@ data class MonthlySpending(
 )
 ```
 
-**New File:** `app/src/main/java/com/pennywiseai/tracker/data/repository/BudgetRepositoryImpl.kt`
+**New File:** `app/src/main/java/com/fintrace/app/data/repository/BudgetRepositoryImpl.kt`
 
 ```kotlin
 @Singleton
@@ -363,7 +363,7 @@ fun BudgetInputDialog(
 ## 4.5 Update AppDatabase
 
 ### Task: Add new entities and migration
-**File:** `app/src/main/java/com/pennywiseai/tracker/data/database/AppDatabase.kt`
+**File:** `app/src/main/java/com/fintrace/app/data/database/AppDatabase.kt`
 
 ```kotlin
 @Database(
@@ -429,7 +429,7 @@ val MIGRATION_X_Y = object : Migration(X, Y) {
 ## 4.6 Create Budget Progress Component
 
 ### Task: Create reusable budget progress UI
-**New File:** `app/src/main/java/com/pennywiseai/tracker/ui/components/budget/BudgetProgressCard.kt`
+**New File:** `app/src/main/java/com/fintrace/app/ui/components/budget/BudgetProgressCard.kt`
 
 ```kotlin
 @Composable

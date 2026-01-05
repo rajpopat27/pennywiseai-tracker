@@ -13,7 +13,7 @@ This phase focuses on core architecture improvements: consolidating duplicate co
 ### Task: Unify transaction processing
 **Reference:** See `docs/transaction-processing-refactor.md` and `docs/transaction-processing-refactor-todo.md`
 
-**New File:** `app/src/main/java/com/pennywiseai/tracker/data/processor/TransactionProcessor.kt`
+**New File:** `app/src/main/java/com/fintrace/app/data/processor/TransactionProcessor.kt`
 
 ```kotlin
 @Singleton
@@ -81,7 +81,7 @@ class TransactionProcessor @Inject constructor(
 ## 3.2 Create FilterStateManager
 
 ### Task: Centralize filter state management
-**New File:** `app/src/main/java/com/pennywiseai/tracker/presentation/common/FilterStateManager.kt`
+**New File:** `app/src/main/java/com/fintrace/app/presentation/common/FilterStateManager.kt`
 
 ```kotlin
 class FilterStateManager(
@@ -140,7 +140,7 @@ data class FilterState(
 ## 3.3 Create HiddenAccountsRepository
 
 ### Task: Move SharedPreferences access out of ViewModels
-**New File:** `app/src/main/java/com/pennywiseai/tracker/data/repository/HiddenAccountsRepository.kt`
+**New File:** `app/src/main/java/com/fintrace/app/data/repository/HiddenAccountsRepository.kt`
 
 ```kotlin
 interface HiddenAccountsRepository {
@@ -207,7 +207,7 @@ abstract fun bindHiddenAccountsRepository(
 ## 3.4 Create UndoableDeleteDelegate
 
 ### Task: Centralize delete with undo pattern
-**New File:** `app/src/main/java/com/pennywiseai/tracker/presentation/common/UndoableDeleteDelegate.kt`
+**New File:** `app/src/main/java/com/fintrace/app/presentation/common/UndoableDeleteDelegate.kt`
 
 ```kotlin
 class UndoableDeleteDelegate<T>(
@@ -267,7 +267,7 @@ class UndoableDeleteDelegate<T>(
 ## 3.5 Add Missing Database Indexes
 
 ### Task: Add indexes for query performance
-**File:** `app/src/main/java/com/pennywiseai/tracker/data/database/entity/TransactionEntity.kt`
+**File:** `app/src/main/java/com/fintrace/app/data/database/entity/TransactionEntity.kt`
 
 ```kotlin
 @Entity(
@@ -329,7 +329,7 @@ object CurrencyFormatter {
 ## 3.7 Consolidate Transaction Item UI
 
 ### Task: Create single configurable TransactionListItem
-**New File:** `app/src/main/java/com/pennywiseai/tracker/ui/components/items/TransactionListItem.kt`
+**New File:** `app/src/main/java/com/fintrace/app/ui/components/items/TransactionListItem.kt`
 
 ```kotlin
 @Composable
@@ -373,7 +373,7 @@ data class TransactionItemConfig(
 ## 3.8 Create Reusable EmptyStateCard
 
 ### Task: Consolidate empty state patterns
-**New File:** `app/src/main/java/com/pennywiseai/tracker/ui/components/states/EmptyStateCard.kt`
+**New File:** `app/src/main/java/com/fintrace/app/ui/components/states/EmptyStateCard.kt`
 
 ```kotlin
 @Composable

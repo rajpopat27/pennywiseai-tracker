@@ -1,8 +1,8 @@
-package com.pennywiseai.parser.core.bank
+package com.fintrace.parser.core.bank
 
-import com.pennywiseai.parser.core.test.ExpectedTransaction
-import com.pennywiseai.parser.core.test.ParserTestCase
-import com.pennywiseai.parser.core.test.ParserTestUtils
+import com.fintrace.parser.core.test.ExpectedTransaction
+import com.fintrace.parser.core.test.ParserTestCase
+import com.fintrace.parser.core.test.ParserTestUtils
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 
@@ -28,7 +28,7 @@ Fund transfer of NPR 250.00 to A/C 01000000055 was successful on 19-Feb-2025 15:
                 expected = ExpectedTransaction(
                     amount = BigDecimal("250.00"),
                     currency = "NPR",
-                    type = com.pennywiseai.parser.core.TransactionType.EXPENSE,
+                    type = com.fintrace.parser.core.TransactionType.EXPENSE,
                     merchant = "Fund Transfer",
                     accountLast4 = "0055"
                 )
@@ -45,7 +45,7 @@ Enjoy the new features of eNMB App. Click here to learn more bit.ly/3qpteyE A/C 
                 expected = ExpectedTransaction(
                     amount = BigDecimal("700.00"),
                     currency = "NPR",
-                    type = com.pennywiseai.parser.core.TransactionType.EXPENSE,
+                    type = com.fintrace.parser.core.TransactionType.EXPENSE,
                     merchant = "ATM Withdrawal",
                     accountLast4 = "0016",  // 0 + 16 = last 4 of combined
                     reference = "523396049"
@@ -62,7 +62,7 @@ Your  Esewa Wallet Load for 9850000007 of 300.00 is successful on 24-May-2025 18
                 expected = ExpectedTransaction(
                     amount = BigDecimal("300.00"),
                     currency = "NPR",
-                    type = com.pennywiseai.parser.core.TransactionType.EXPENSE,
+                    type = com.fintrace.parser.core.TransactionType.EXPENSE,
                     merchant = "Esewa Wallet Load"
                 )
             )

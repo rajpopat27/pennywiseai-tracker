@@ -1,8 +1,8 @@
-import com.pennywiseai.parser.core.TransactionType
-import com.pennywiseai.parser.core.bank.JuspayParser
-import com.pennywiseai.parser.core.test.ExpectedTransaction
-import com.pennywiseai.parser.core.test.ParserTestCase
-import com.pennywiseai.parser.core.test.ParserTestUtils
+import com.fintrace.parser.core.TransactionType
+import com.fintrace.parser.core.bank.JuspayParser
+import com.fintrace.parser.core.test.ExpectedTransaction
+import com.fintrace.parser.core.test.ParserTestCase
+import com.fintrace.parser.core.test.ParserTestUtils
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 
@@ -168,7 +168,7 @@ class JuspayParserTest {
     @Test
     fun `factory resolves juspay`() {
         val cases = listOf(
-            com.pennywiseai.parser.core.test.SimpleTestCase(
+            com.fintrace.parser.core.test.SimpleTestCase(
                 bankName = "Amazon Pay",
                 sender = "JUSPAY",
                 currency = "INR",
@@ -182,7 +182,7 @@ class JuspayParserTest {
                 ),
                 shouldHandle = true
             ),
-            com.pennywiseai.parser.core.test.SimpleTestCase(
+            com.fintrace.parser.core.test.SimpleTestCase(
                 bankName = "Amazon Pay",
                 sender = "APAY",
                 currency = "INR",

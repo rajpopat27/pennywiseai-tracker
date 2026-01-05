@@ -10,7 +10,7 @@ plugins {
 }
 
 android {
-    namespace = "com.pennywiseai.tracker"
+    namespace = "com.fintrace.app"
     compileSdk = 36
     
     buildFeatures {
@@ -18,7 +18,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.pennywiseai.tracker"
+        applicationId = "com.fintrace.app"
         minSdk = 26
         targetSdk = 36
         versionCode = 79

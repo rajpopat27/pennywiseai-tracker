@@ -3,10 +3,10 @@
 ## Quick Reference
 
 **Files to modify when transitioning to production:**
-- `app/src/main/java/com/pennywiseai/tracker/data/database/PennyWiseDatabase.kt`
-- `app/src/main/java/com/pennywiseai/tracker/di/DatabaseModule.kt`
+- `app/src/main/java/com/fintrace/app/data/database/FintraceDatabase.kt`
+- `app/src/main/java/com/fintrace/app/di/DatabaseModule.kt`
 
-**Imports needed for migrations (add to PennyWiseDatabase.kt):**
+**Imports needed for migrations (add to FintraceDatabase.kt):**
 ```kotlin
 import androidx.room.AutoMigration
 import androidx.room.migration.AutoMigrationSpec
@@ -14,7 +14,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 ```
 
-**Schema files location:** `app/schemas/com.pennywiseai.tracker.data.database.PennyWiseDatabase/`
+**Schema files location:** `app/schemas/com.fintrace.app.data.database.FintraceDatabase/`
 
 ---
 
@@ -24,8 +24,8 @@ During alpha development, we use `fallbackToDestructiveMigration()` which **wipe
 
 **Current setup:**
 ```kotlin
-// In PennyWiseDatabase.kt and DatabaseModule.kt
-Room.databaseBuilder(context, PennyWiseDatabase::class.java, DATABASE_NAME)
+// In FintraceDatabase.kt and DatabaseModule.kt
+Room.databaseBuilder(context, FintraceDatabase::class.java, DATABASE_NAME)
     .fallbackToDestructiveMigration()  // Wipes DB on schema change
     .build()
 ```
@@ -42,13 +42,13 @@ When ready for production release, follow these steps to enable proper migration
 
 Remove `.fallbackToDestructiveMigration()` from both files:
 
-**PennyWiseDatabase.kt:**
+**FintraceDatabase.kt:**
 ```kotlin
-fun getInstance(context: android.content.Context): PennyWiseDatabase {
+fun getInstance(context: android.content.Context): FintraceDatabase {
     return INSTANCE ?: synchronized(this) {
         val instance = androidx.room.Room.databaseBuilder(
             context.applicationContext,
-            PennyWiseDatabase::class.java,
+            FintraceDatabase::class.java,
             DATABASE_NAME
         )
             // REMOVE: .fallbackToDestructiveMigration()
@@ -64,8 +64,8 @@ fun getInstance(context: android.content.Context): PennyWiseDatabase {
 ```kotlin
 val database = Room.databaseBuilder(
     context,
-    PennyWiseDatabase::class.java,
-    PennyWiseDatabase.DATABASE_NAME
+    FintraceDatabase::class.java,
+    FintraceDatabase.DATABASE_NAME
 )
     // REMOVE: .fallbackToDestructiveMigration()
     .addMigrations(/* add your migrations here */)
@@ -91,7 +91,7 @@ Build the project to generate the schema JSON file:
 ./gradlew :app:kspDebugKotlin
 ```
 
-This creates `app/schemas/com.pennywiseai.tracker.data.database.PennyWiseDatabase/1.json`
+This creates `app/schemas/com.fintrace.app.data.database.FintraceDatabase/1.json`
 
 ### Step 4: Commit Schema Files
 
@@ -201,7 +201,7 @@ Available annotations:
 For complex changes like changing column types or data transformations:
 
 ```kotlin
-// Add to PennyWiseDatabase companion object:
+// Add to FintraceDatabase companion object:
 companion object {
     val MIGRATION_1_2 = object : Migration(1, 2) {
         override fun migrate(db: SupportSQLiteDatabase) {
@@ -213,7 +213,7 @@ companion object {
 
 // Register in DatabaseModule.kt:
 Room.databaseBuilder(...)
-    .addMigrations(PennyWiseDatabase.MIGRATION_1_2)
+    .addMigrations(FintraceDatabase.MIGRATION_1_2)
     .build()
 ```
 
@@ -277,7 +277,7 @@ class MigrationTest {
     @get:Rule
     val helper = MigrationTestHelper(
         InstrumentationRegistry.getInstrumentation(),
-        PennyWiseDatabase::class.java
+        FintraceDatabase::class.java
     )
 
     @Test

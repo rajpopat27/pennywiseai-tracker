@@ -1,8 +1,8 @@
-import com.pennywiseai.parser.core.TransactionType
-import com.pennywiseai.parser.core.bank.ICICIBankParser
-import com.pennywiseai.parser.core.test.ExpectedTransaction
-import com.pennywiseai.parser.core.test.ParserTestCase
-import com.pennywiseai.parser.core.test.ParserTestUtils
+import com.fintrace.parser.core.TransactionType
+import com.fintrace.parser.core.bank.ICICIBankParser
+import com.fintrace.parser.core.test.ExpectedTransaction
+import com.fintrace.parser.core.test.ParserTestCase
+import com.fintrace.parser.core.test.ParserTestUtils
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 
@@ -26,7 +26,7 @@ class ICICIBankParserTest {
                 expected = ExpectedTransaction(
                     amount = BigDecimal("11.80"),
                     currency = "USD",
-                    type = TransactionType.CREDIT,
+                    type = TransactionType.EXPENSE,
                     merchant = "1xJetBrains AI",
                     accountLast4 = "7004"
                 )
@@ -38,7 +38,7 @@ class ICICIBankParserTest {
                 expected = ExpectedTransaction(
                     amount = BigDecimal("50.00"),
                     currency = "EUR",
-                    type = TransactionType.CREDIT,
+                    type = TransactionType.EXPENSE,
                     merchant = "Amazon DE",
                     accountLast4 = "1234"
                 )
@@ -50,7 +50,7 @@ class ICICIBankParserTest {
                 expected = ExpectedTransaction(
                     amount = BigDecimal("500.00"),
                     currency = "INR",
-                    type = TransactionType.CREDIT,
+                    type = TransactionType.EXPENSE,
                     merchant = "Swiggy",
                     accountLast4 = "5678"
                 )

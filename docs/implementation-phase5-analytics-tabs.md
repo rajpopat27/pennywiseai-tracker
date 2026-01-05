@@ -38,7 +38,7 @@ dependencies {
 ## 5.2 Create Chart Components
 
 ### Task: Create reusable chart composables
-**New Directory:** `app/src/main/java/com/pennywiseai/tracker/ui/components/charts/`
+**New Directory:** `app/src/main/java/com/fintrace/app/ui/components/charts/`
 
 #### SpendingTrendChart
 

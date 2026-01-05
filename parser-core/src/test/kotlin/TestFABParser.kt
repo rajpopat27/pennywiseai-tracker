@@ -1,8 +1,8 @@
-import com.pennywiseai.parser.core.TransactionType
-import com.pennywiseai.parser.core.bank.FABParser
-import com.pennywiseai.parser.core.test.ExpectedTransaction
-import com.pennywiseai.parser.core.test.ParserTestCase
-import com.pennywiseai.parser.core.test.ParserTestUtils
+import com.fintrace.parser.core.TransactionType
+import com.fintrace.parser.core.bank.FABParser
+import com.fintrace.parser.core.test.ExpectedTransaction
+import com.fintrace.parser.core.test.ParserTestCase
+import com.fintrace.parser.core.test.ParserTestUtils
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 
@@ -35,7 +35,7 @@ class FABParserTest {
                 expected = ExpectedTransaction(
                     amount = BigDecimal("8.00"),
                     currency = "AED",
-                    type = TransactionType.CREDIT,
+                    type = TransactionType.EXPENSE,
                     merchant = "TR              DUBAI           ARE",
                     accountLast4 = "0002",
                     balance = BigDecimal("4530.16"),

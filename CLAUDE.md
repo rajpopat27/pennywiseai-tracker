@@ -1,7 +1,17 @@
-# PennyWise Project Context
+# Fintrace Project Context
+
+## Autonomous Execution Mode
+When instructed to complete all phases, Claude should:
+1. Read `.claude/context.md` at the start of each session to restore context
+2. Continue from the current phase without waiting for user approval
+3. Complete all remaining phases in order (0 → 7) as defined in context.md
+4. Self-review generated code for correctness, imports, and pattern consistency
+5. Update `.claude/context.md` after completing each major task
+6. Re-read `CLAUDE.md` every few tasks to ensure compliance with guidelines
+7. Do NOT stop until all phases are marked complete
 
 ## Project Overview
-PennyWise is a minimalist, AI-powered expense tracker for Android that automatically extracts transaction data from SMS messages using on-device processing.
+Fintrace is a minimalist, AI-powered expense tracker for Android that automatically extracts transaction data from SMS messages using on-device processing.
 
 ## Important Documents
 Please reference these documents when working on this project:
@@ -24,8 +34,8 @@ Please reference these documents when working on this project:
 - **Spacing**: 8dp grid system
 - **Typography**: Material 3 type scale
 - **Navigation**: NavigationBar for phones, NavigationRail for tablets
-- **Edge-to-Edge**: All screens use PennyWiseScaffold with default TopAppBar for consistent system bar handling
-- **Consistent UI**: PennyWiseScaffold provides default TopAppBar with options for title, navigation, actions, and transparency
+- **Edge-to-Edge**: All screens use FintraceScaffold with default TopAppBar for consistent system bar handling
+- **Consistent UI**: FintraceScaffold provides default TopAppBar with options for title, navigation, actions, and transparency
 
 ## Code Style Guidelines
 - Follow Kotlin coding conventions
@@ -51,9 +61,9 @@ Please reference these documents when working on this project:
 - Single source of truth for data - one repository per domain concept
 
 ### UI Consistency
-- All screens must use `PennyWiseScaffold` with consistent TopAppBar actions
+- All screens must use `FintraceScaffold` with consistent TopAppBar actions
 - Use design system tokens (`Spacing.*`, `Dimensions.*`) instead of hardcoded dp values
-- Reuse existing components (`PennyWiseCard`, `CategoryIcon`, etc.) - don't create duplicates
+- Reuse existing components (`FintraceCard`, `CategoryIcon`, etc.) - don't create duplicates
 - Consistent padding/spacing - layouts should not shift when content changes
 - Same visual patterns across similar screens (filters, empty states, list items)
 
@@ -108,7 +118,7 @@ The project now uses a multi-module architecture:
 Bank parsers are now in the `parser-core` module for reusability across platforms.
 
 ### When adding new bank parsers:
-1. **Location**: Add to `parser-core/src/main/kotlin/com/pennywiseai/parser/core/bank/`
+1. **Location**: Add to `parser-core/src/main/kotlin/com/fintrace/parser/core/bank/`
 2. **Base Class**: All bank parsers extend `BankParser` abstract class
 3. **Key Methods**:
    - `getBankName()`: Returns the bank's display name
@@ -121,12 +131,12 @@ Bank parsers are now in the `parser-core` module for reusability across platform
 5. **Registration**: Add new parser to `BankParserFactory.parsers` list in parser-core
 6. **Return Type**: Use `ParsedTransaction` from parser-core
 7. **Imports for parser-core**:
-   - `com.pennywiseai.parser.core.TransactionType`
-   - `com.pennywiseai.parser.core.ParsedTransaction`
+   - `com.fintrace.parser.core.TransactionType`
+   - `com.fintrace.parser.core.ParsedTransaction`
    - `java.math.BigDecimal` for amounts
 
 ### Integration in main app:
-- Use `com.pennywiseai.tracker.data.mapper.toEntity()` to convert ParsedTransaction to TransactionEntity
+- Use `com.fintrace.app.data.mapper.toEntity()` to convert ParsedTransaction to TransactionEntity
 - The mapper handles type conversions between modules
 
 ## Supported Banks (46 parsers)

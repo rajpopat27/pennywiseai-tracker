@@ -12,8 +12,8 @@ This phase focuses on removing features, fixing critical bugs, and cleaning up t
 
 ### Task: Simplify TransactionType enum
 **Files to modify:**
-- [ ] `parser-core/src/main/kotlin/com/pennywiseai/parser/core/TransactionType.kt`
-- [ ] `app/src/main/java/com/pennywiseai/tracker/data/database/entity/TransactionType.kt`
+- [ ] `parser-core/src/main/kotlin/com/fintrace/parser/core/TransactionType.kt`
+- [ ] `app/src/main/java/com/fintrace/app/data/database/entity/TransactionType.kt`
 
 **Changes:**
 ```kotlin

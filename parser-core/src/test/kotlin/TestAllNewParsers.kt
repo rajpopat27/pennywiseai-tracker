@@ -1,7 +1,7 @@
-import com.pennywiseai.parser.core.TransactionType
-import com.pennywiseai.parser.core.test.ExpectedTransaction
-import com.pennywiseai.parser.core.test.ParserTestUtils
-import com.pennywiseai.parser.core.test.SimpleTestCase
+import com.fintrace.parser.core.TransactionType
+import com.fintrace.parser.core.test.ExpectedTransaction
+import com.fintrace.parser.core.test.ParserTestUtils
+import com.fintrace.parser.core.test.SimpleTestCase
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 
@@ -47,7 +47,7 @@ class AllNewParsersTest {
                 expected = ExpectedTransaction(
                     amount = BigDecimal("8.00"),
                     currency = "AED",
-                    type = TransactionType.CREDIT,
+                    type = TransactionType.EXPENSE,
                     merchant = "T R DUBAI ARE"
                 ),
                 shouldHandle = true,

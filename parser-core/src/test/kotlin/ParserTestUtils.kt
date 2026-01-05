@@ -1,9 +1,9 @@
-package com.pennywiseai.parser.core.test
+package com.fintrace.parser.core.test
 
-import com.pennywiseai.parser.core.ParsedTransaction
-import com.pennywiseai.parser.core.TransactionType
-import com.pennywiseai.parser.core.bank.BankParser
-import com.pennywiseai.parser.core.bank.BankParserFactory
+import com.fintrace.parser.core.ParsedTransaction
+import com.fintrace.parser.core.TransactionType
+import com.fintrace.parser.core.bank.BankParser
+import com.fintrace.parser.core.bank.BankParserFactory
 import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.function.Executable

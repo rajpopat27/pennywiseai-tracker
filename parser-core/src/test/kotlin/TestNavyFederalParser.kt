@@ -1,8 +1,8 @@
-import com.pennywiseai.parser.core.TransactionType
-import com.pennywiseai.parser.core.bank.NavyFederalParser
-import com.pennywiseai.parser.core.test.ExpectedTransaction
-import com.pennywiseai.parser.core.test.ParserTestCase
-import com.pennywiseai.parser.core.test.ParserTestUtils
+import com.fintrace.parser.core.TransactionType
+import com.fintrace.parser.core.bank.NavyFederalParser
+import com.fintrace.parser.core.test.ExpectedTransaction
+import com.fintrace.parser.core.test.ParserTestCase
+import com.fintrace.parser.core.test.ParserTestUtils
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 
@@ -175,7 +175,7 @@ class NavyFederalParserTest {
     @Test
     fun `factory resolves navy federal`() {
         val cases = listOf(
-            com.pennywiseai.parser.core.test.SimpleTestCase(
+            com.fintrace.parser.core.test.SimpleTestCase(
                 bankName = "Navy Federal Credit Union",
                 sender = "NFCU",
                 currency = "USD",
@@ -190,7 +190,7 @@ class NavyFederalParserTest {
                 ),
                 shouldHandle = true
             ),
-            com.pennywiseai.parser.core.test.SimpleTestCase(
+            com.fintrace.parser.core.test.SimpleTestCase(
                 bankName = "Navy Federal Credit Union",
                 sender = "NAVYFED",
                 currency = "USD",
