@@ -20,11 +20,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Savings
+import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -92,6 +94,7 @@ fun TransactionConfirmationDialog(
     onAccountChange: (bankName: String?, accountNumber: String?) -> Unit,
     onCashbackChange: (BigDecimal?) -> Unit,
     onCreateAccount: (bankName: String, accountLast4: String, balance: BigDecimal, isCreditCard: Boolean, creditLimit: BigDecimal?, cashbackPercent: BigDecimal?) -> Unit,
+    onSaveAsAlias: ((originalMerchant: String, aliasMerchant: String) -> Unit)? = null,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -103,6 +106,30 @@ fun TransactionConfirmationDialog(
     var cashbackText by remember(currentAccountCashback) {
         mutableStateOf(currentAccountCashback?.toPlainString() ?: "")
     }
+
+    // Track the initial merchant name when dialog opens (for alias comparison)
+    val initialMerchantName = remember { pending.merchantName }
+
+    // Determine alias state:
+    // - aliasWasApplied: An alias was applied during SMS processing
+    // - userChangedMerchant: User has modified the merchant name in this dialog
+    // - sourceForAlias: The original merchant name to use when saving an alias
+    val aliasWasApplied = pending.originalMerchantName != null
+    val userChangedMerchant = pending.merchantName != initialMerchantName
+    val sourceForAlias = pending.originalMerchantName ?: initialMerchantName
+
+    // Show "Save as Alias" when:
+    // 1. Callback is provided AND
+    // 2. User has changed the merchant name AND
+    // 3. The new name is different from the source
+    val canSaveAsAlias = onSaveAsAlias != null &&
+        userChangedMerchant &&
+        pending.merchantName != sourceForAlias
+
+    // Show "Alias Applied" info when:
+    // 1. An alias was applied during processing AND
+    // 2. User hasn't changed the merchant name
+    val showAliasAppliedInfo = aliasWasApplied && !userChangedMerchant
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -278,23 +305,116 @@ fun TransactionConfirmationDialog(
                     }
 
                     // Merchant Row
+                    // Determine if we can save as alias:
+                    // - onSaveAsAlias callback is provided
+                    // - User has changed the merchant name
+                    // - The new name is different from the source (original or initial)
+                    var showAliasConfirmation by remember { mutableStateOf(false) }
+
                     FormFieldRow(
                         label = "Merchant",
                         content = {
-                            OutlinedTextField(
-                                value = pending.merchantName,
-                                onValueChange = onMerchantChange,
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth(0.6f),
-                                textStyle = MaterialTheme.typography.bodyMedium,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                                ),
-                                shape = RoundedCornerShape(12.dp)
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                OutlinedTextField(
+                                    value = pending.merchantName,
+                                    onValueChange = onMerchantChange,
+                                    singleLine = true,
+                                    modifier = Modifier.weight(1f),
+                                    textStyle = MaterialTheme.typography.bodyMedium,
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                                    ),
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                if (canSaveAsAlias) {
+                                    IconButton(
+                                        onClick = { showAliasConfirmation = true },
+                                        modifier = Modifier.size(40.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Bookmark,
+                                            contentDescription = "Save as Alias",
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+                            }
                         }
                     )
+
+                    // Alias info or hint
+                    if (showAliasAppliedInfo) {
+                        // Show that an alias was already applied
+                        Row(
+                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 2.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.SwapHoriz,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Alias applied: \"${pending.originalMerchantName}\" → \"${pending.merchantName}\"",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                            )
+                        }
+                    } else if (canSaveAsAlias) {
+                        // Show hint to save as alias
+                        Text(
+                            text = "Tap bookmark to always use \"${pending.merchantName}\" for \"$sourceForAlias\"",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 2.dp)
+                        )
+                    }
+
+                    // Alias confirmation dialog
+                    if (showAliasConfirmation && canSaveAsAlias) {
+                        androidx.compose.material3.AlertDialog(
+                            onDismissRequest = { showAliasConfirmation = false },
+                            title = { Text("Save Merchant Alias") },
+                            text = {
+                                Column {
+                                    Text("Always display:")
+                                    Text(
+                                        text = "\"$sourceForAlias\"",
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text("as:")
+                                    Text(
+                                        text = "\"${pending.merchantName}\"",
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = {
+                                        onSaveAsAlias?.invoke(sourceForAlias, pending.merchantName)
+                                        showAliasConfirmation = false
+                                    }
+                                ) {
+                                    Text("Save Alias")
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showAliasConfirmation = false }) {
+                                    Text("Cancel")
+                                }
+                            }
+                        )
+                    }
 
                     // Category Row
                     FormFieldRow(

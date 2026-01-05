@@ -23,6 +23,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -119,6 +120,7 @@ fun PendingTransactionsScreen(
             onAccountChange = viewModel::updateAccount,
             onCashbackChange = viewModel::updateAccountCashback,
             onCreateAccount = viewModel::createAccount,
+            onSaveAsAlias = viewModel::saveAsAlias,
             onConfirm = viewModel::confirmSelected,
             onDismiss = viewModel::clearSelection
         )
@@ -293,6 +295,7 @@ fun PendingTransactionsContent(
             onAccountChange = viewModel::updateAccount,
             onCashbackChange = viewModel::updateAccountCashback,
             onCreateAccount = viewModel::createAccount,
+            onSaveAsAlias = viewModel::saveAsAlias,
             onConfirm = viewModel::confirmSelected,
             onDismiss = viewModel::clearSelection
         )
@@ -484,13 +487,28 @@ private fun PendingTransactionItem(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                Text(
-                    text = pending.merchantName,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = pending.merchantName,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                    // Show alias indicator if an alias was applied
+                    if (pending.originalMerchantName != null) {
+                        Icon(
+                            imageVector = Icons.Default.SwapHoriz,
+                            contentDescription = "Aliased from ${pending.originalMerchantName}",
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
                 Text(
                     text = "${pending.category} • ${pending.dateTime.format(DateTimeFormatter.ofPattern("MMM dd, HH:mm"))}",
                     style = MaterialTheme.typography.bodySmall,

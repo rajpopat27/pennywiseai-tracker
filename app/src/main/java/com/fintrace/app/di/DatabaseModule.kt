@@ -10,6 +10,7 @@ import com.fintrace.app.data.database.dao.BudgetDao
 import com.fintrace.app.data.database.dao.CardDao
 import com.fintrace.app.data.database.dao.CategoryDao
 import com.fintrace.app.data.database.dao.ExchangeRateDao
+import com.fintrace.app.data.database.dao.MerchantAliasDao
 import com.fintrace.app.data.database.dao.MerchantMappingDao
 import com.fintrace.app.data.database.dao.RuleApplicationDao
 import com.fintrace.app.data.database.dao.RuleDao
@@ -98,6 +99,18 @@ object DatabaseModule {
     @Singleton
     fun provideMerchantMappingDao(database: FintraceDatabase): MerchantMappingDao {
         return database.merchantMappingDao()
+    }
+
+    /**
+     * Provides the MerchantAliasDao from the database.
+     *
+     * @param database The FintraceDatabase instance
+     * @return MerchantAliasDao for accessing merchant alias data
+     */
+    @Provides
+    @Singleton
+    fun provideMerchantAliasDao(database: FintraceDatabase): MerchantAliasDao {
+        return database.merchantAliasDao()
     }
     
     /**

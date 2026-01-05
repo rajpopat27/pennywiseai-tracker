@@ -50,3 +50,6 @@ object PendingTransactions
 
 @Serializable
 data class PendingTransactionReview(val pendingId: Long)
+
+@Serializable
+object MerchantAliases

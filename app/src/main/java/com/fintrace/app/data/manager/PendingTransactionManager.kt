@@ -104,11 +104,15 @@ class PendingTransactionManager @Inject constructor(
      * Adds a parsed transaction to the pending queue.
      *
      * @param parsedTransaction The parsed transaction from SMS
+     * @param originalMerchant The original merchant name before alias was applied (null if no alias)
      * @return Result indicating whether to show dialog, saved as pending, or error
      */
-    suspend fun addPendingTransaction(parsedTransaction: ParsedTransaction): AddPendingResult {
+    suspend fun addPendingTransaction(
+        parsedTransaction: ParsedTransaction,
+        originalMerchant: String? = null
+    ): AddPendingResult {
         return try {
-            val pendingEntity = parsedTransaction.toPendingEntity()
+            val pendingEntity = parsedTransaction.toPendingEntity(originalMerchant)
 
             // Check for existing transaction (duplicate check)
             val existingTransaction = transactionRepository.getTransactionByHash(pendingEntity.transactionHash)

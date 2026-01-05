@@ -19,7 +19,14 @@ data class ParsedTransaction(
     val isFromCard: Boolean = false,
     val currency: String = "INR",
     val fromAccount: String? = null,
-    val toAccount: String? = null
+    val toAccount: String? = null,
+    /**
+     * Confidence score indicating parser reliability.
+     * 1.0 = Specific bank parser (e.g., HDFCBankParser)
+     * 0.7 = Generic fallback parser
+     * 0.9 = AI-based parsing (future)
+     */
+    val parserConfidence: Float = 1.0f
 ) {
     fun generateTransactionId(): String {
         val normalizedAmount = amount.setScale(2, java.math.RoundingMode.HALF_UP)

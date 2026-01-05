@@ -9,6 +9,7 @@ import com.fintrace.app.data.database.dao.BudgetDao
 import com.fintrace.app.data.database.dao.CardDao
 import com.fintrace.app.data.database.dao.CategoryDao
 import com.fintrace.app.data.database.dao.ExchangeRateDao
+import com.fintrace.app.data.database.dao.MerchantAliasDao
 import com.fintrace.app.data.database.dao.MerchantMappingDao
 import com.fintrace.app.data.database.dao.RuleApplicationDao
 import com.fintrace.app.data.database.dao.RuleDao
@@ -22,6 +23,7 @@ import com.fintrace.app.data.database.entity.BudgetHistoryEntity
 import com.fintrace.app.data.database.entity.CardEntity
 import com.fintrace.app.data.database.entity.CategoryEntity
 import com.fintrace.app.data.database.entity.ExchangeRateEntity
+import com.fintrace.app.data.database.entity.MerchantAliasEntity
 import com.fintrace.app.data.database.entity.MerchantMappingEntity
 import com.fintrace.app.data.database.entity.RuleApplicationEntity
 import com.fintrace.app.data.database.entity.RuleEntity
@@ -48,6 +50,7 @@ import com.fintrace.app.data.database.view.LatestAccountBalanceView
         TransactionEntity::class,
         SubscriptionEntity::class,
         MerchantMappingEntity::class,
+        MerchantAliasEntity::class,
         CategoryEntity::class,
         AccountBalanceEntity::class,
         UnrecognizedSmsEntity::class,
@@ -60,7 +63,7 @@ import com.fintrace.app.data.database.view.LatestAccountBalanceView
         BudgetHistoryEntity::class
     ],
     views = [LatestAccountBalanceView::class],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -68,6 +71,7 @@ abstract class FintraceDatabase : RoomDatabase() {
     abstract fun transactionDao(): TransactionDao
     abstract fun subscriptionDao(): SubscriptionDao
     abstract fun merchantMappingDao(): MerchantMappingDao
+    abstract fun merchantAliasDao(): MerchantAliasDao
     abstract fun categoryDao(): CategoryDao
     abstract fun accountBalanceDao(): AccountBalanceDao
     abstract fun unrecognizedSmsDao(): UnrecognizedSmsDao

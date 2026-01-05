@@ -106,8 +106,9 @@ fun com.fintrace.parser.core.TransactionType.toEntityType(): TransactionType {
 
 /**
  * Maps ParsedTransaction from parser-core to PendingTransactionEntity
+ * @param originalMerchant The original merchant name before alias was applied (null if no alias)
  */
-fun ParsedTransaction.toPendingEntity(): PendingTransactionEntity {
+fun ParsedTransaction.toPendingEntity(originalMerchant: String? = null): PendingTransactionEntity {
     val dateTime = LocalDateTime.ofInstant(
         Instant.ofEpochMilli(timestamp),
         ZoneId.systemDefault()
@@ -115,6 +116,13 @@ fun ParsedTransaction.toPendingEntity(): PendingTransactionEntity {
 
     val normalizedMerchant = merchant?.let { normalizeMerchantName(it) }
     val entityType = type.toEntityType()
+
+    // If an alias was applied, store the original merchant name
+    val originalMerchantName = if (originalMerchant != null && originalMerchant != merchant) {
+        originalMerchant
+    } else {
+        null
+    }
 
     return PendingTransactionEntity(
         id = 0,
@@ -132,7 +140,8 @@ fun ParsedTransaction.toPendingEntity(): PendingTransactionEntity {
         transactionHash = transactionHash?.takeIf { it.isNotBlank() } ?: generateTransactionId(),
         currency = currency,
         fromAccount = fromAccount,
-        toAccount = toAccount
+        toAccount = toAccount,
+        originalMerchantName = originalMerchantName
     )
 }
 

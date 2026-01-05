@@ -79,6 +79,9 @@ fun FintraceNavHost(
                 },
                 onNavigateToFaq = {
                     navController.navigate(Faq)
+                },
+                onNavigateToMerchantAliases = {
+                    navController.navigate(MerchantAliases)
                 }
             )
         }
@@ -238,6 +241,19 @@ fun FintraceNavHost(
                     navController.navigate(PendingTransactions) {
                         popUpTo(PendingTransactionReview(review.pendingId)) { inclusive = true }
                     }
+                }
+            )
+        }
+
+        composable<MerchantAliases>(
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None },
+            popEnterTransition = { EnterTransition.None },
+            popExitTransition = { ExitTransition.None }
+        ) {
+            com.fintrace.app.ui.screens.settings.MerchantAliasScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }

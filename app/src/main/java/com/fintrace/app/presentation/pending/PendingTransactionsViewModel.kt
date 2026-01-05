@@ -10,6 +10,7 @@ import com.fintrace.app.data.database.entity.TransactionType
 import com.fintrace.app.data.manager.PendingTransactionManager
 import com.fintrace.app.data.repository.AccountBalanceRepository
 import com.fintrace.app.data.repository.CategoryRepository
+import com.fintrace.app.data.repository.MerchantAliasRepository
 import com.fintrace.app.data.repository.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -32,7 +33,8 @@ class PendingTransactionsViewModel @Inject constructor(
     private val pendingTransactionManager: PendingTransactionManager,
     private val categoryRepository: CategoryRepository,
     private val accountBalanceRepository: AccountBalanceRepository,
-    private val transactionRepository: TransactionRepository
+    private val transactionRepository: TransactionRepository,
+    private val merchantAliasRepository: MerchantAliasRepository
 ) : ViewModel() {
 
     companion object {
@@ -488,6 +490,22 @@ class PendingTransactionsViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e(TAG, "Error creating account", e)
                 _events.emit(PendingTransactionEvent.Error("Failed to create account: ${e.message}"))
+            }
+        }
+    }
+
+    /**
+     * Saves a merchant alias mapping.
+     * Future transactions from the original merchant will use the alias name.
+     */
+    fun saveAsAlias(originalMerchant: String, aliasMerchant: String) {
+        viewModelScope.launch {
+            try {
+                merchantAliasRepository.setAlias(originalMerchant, aliasMerchant)
+                Log.d(TAG, "Saved merchant alias: $originalMerchant -> $aliasMerchant")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error saving merchant alias", e)
+                _events.emit(PendingTransactionEvent.Error("Failed to save alias: ${e.message}"))
             }
         }
     }

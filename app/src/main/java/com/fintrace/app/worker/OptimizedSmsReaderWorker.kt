@@ -310,8 +310,9 @@ class OptimizedSmsReaderWorker @AssistedInject constructor(
                             continue
                         }
 
-                        // Parse as regular transaction
+                        // Parse as regular transaction - try specific parser first, then generic fallback
                         val parsedTransaction = parser.parse(sms.body, sms.sender, sms.timestamp)
+                            ?: BankParserFactory.getGenericParser().parse(sms.body, sms.sender, sms.timestamp)
                         if (parsedTransaction != null) {
                             parsedCount++
                             Log.d(
@@ -553,8 +554,9 @@ private suspend fun processMessageChunk(
                     continue
                 }
 
-                // Parse the transaction
+                // Parse the transaction - try specific parser first, then generic fallback
                 val parsedTransaction = parser.parse(sms.body, sms.sender, sms.timestamp)
+                    ?: BankParserFactory.getGenericParser().parse(sms.body, sms.sender, sms.timestamp)
 
                 if (parsedTransaction != null) {
                     parsedCount++
@@ -654,8 +656,9 @@ private suspend fun processBatchCoroutinesDirect(
                         continue
                     }
 
-                    // Parse as regular transaction
+                    // Parse as regular transaction - try specific parser first, then generic fallback
                     val parsedTransaction = parser.parse(sms.body, sms.sender, sms.timestamp)
+                        ?: BankParserFactory.getGenericParser().parse(sms.body, sms.sender, sms.timestamp)
                     if (parsedTransaction != null) {
                         parsedCount++
                         atomicParsed.incrementAndGet()

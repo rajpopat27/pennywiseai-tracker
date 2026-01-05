@@ -66,6 +66,14 @@ data class PendingTransactionEntity(
     @ColumnInfo(name = "to_account")
     val toAccount: String? = null,
 
+    /**
+     * The original merchant name as parsed from the SMS, before any alias was applied.
+     * Used to allow creating new aliases from the confirmation dialog.
+     * If null, merchantName is the original name.
+     */
+    @ColumnInfo(name = "original_merchant_name")
+    val originalMerchantName: String? = null,
+
     @ColumnInfo(name = "status", defaultValue = "PENDING")
     val status: PendingTransactionStatus = PendingTransactionStatus.PENDING,
 

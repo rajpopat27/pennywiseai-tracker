@@ -1,5 +1,7 @@
 package com.fintrace.parser.core.bank
 
+import com.fintrace.parser.core.ParsedTransaction
+
 /**
  * Factory for creating bank-specific parsers based on SMS sender.
  */
@@ -99,5 +101,36 @@ object BankParserFactory {
      */
     fun isKnownBankSender(sender: String): Boolean {
         return parsers.any { it.canHandle(sender) }
+    }
+
+    /**
+     * Parses a transaction with automatic fallback to generic parser.
+     *
+     * This method implements a two-tier parsing strategy:
+     * 1. First tries the specific bank parser (if available)
+     * 2. If specific parser fails or doesn't exist, tries generic parser
+     *
+     * @param sender SMS sender address
+     * @param body SMS body text
+     * @param timestamp SMS timestamp in milliseconds
+     * @return ParsedTransaction or null if both parsers fail
+     */
+    fun parseWithFallback(sender: String, body: String, timestamp: Long): ParsedTransaction? {
+        // 1. Try specific parser first
+        val specificParser = parsers.firstOrNull { it.canHandle(sender) }
+        specificParser?.parse(body, sender, timestamp)?.let {
+            return it
+        }
+
+        // 2. Fallback to generic parser
+        return GenericBankParser().parse(body, sender, timestamp)
+    }
+
+    /**
+     * Returns generic parser instance for fallback parsing.
+     * Use this when no specific parser matches the sender.
+     */
+    fun getGenericParser(): BankParser {
+        return GenericBankParser()
     }
 }

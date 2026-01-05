@@ -61,6 +61,7 @@ fun SettingsScreen(
     onNavigateToManageAccounts: () -> Unit = {},
     onNavigateToFaq: () -> Unit = {},
     onNavigateToRules: () -> Unit = {},
+    onNavigateToMerchantAliases: () -> Unit = {},
     settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
     val themeUiState by themeViewModel.themeUiState.collectAsStateWithLifecycle()
@@ -225,6 +226,13 @@ fun SettingsScreen(
                     title = "Smart Rules",
                     subtitle = "Automatic transaction categorization",
                     onClick = onNavigateToRules
+                )
+                SettingsDivider()
+                SettingsNavigationRow(
+                    icon = Icons.Default.SwapHoriz,
+                    title = "Merchant Aliases",
+                    subtitle = "Rename merchants for better readability",
+                    onClick = onNavigateToMerchantAliases
                 )
             }
 

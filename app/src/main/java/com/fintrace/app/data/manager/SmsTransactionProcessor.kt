@@ -13,6 +13,7 @@ import com.fintrace.app.data.mapper.toEntityType
 import com.fintrace.app.data.preferences.UserPreferencesRepository
 import com.fintrace.app.data.repository.AccountBalanceRepository
 import com.fintrace.app.data.repository.CardRepository
+import com.fintrace.app.data.repository.MerchantAliasRepository
 import com.fintrace.app.data.repository.MerchantMappingRepository
 import com.fintrace.app.data.repository.SubscriptionRepository
 import com.fintrace.app.data.repository.TransactionRepository
@@ -35,6 +36,7 @@ class SmsTransactionProcessor @Inject constructor(
     private val accountBalanceRepository: AccountBalanceRepository,
     private val cardRepository: CardRepository,
     private val merchantMappingRepository: MerchantMappingRepository,
+    private val merchantAliasRepository: MerchantAliasRepository,
     private val subscriptionRepository: SubscriptionRepository,
     private val ruleRepository: RuleRepository,
     private val ruleEngine: RuleEngine,
@@ -72,28 +74,29 @@ class SmsTransactionProcessor @Inject constructor(
         bypassConfirmation: Boolean = false
     ): ProcessingResult {
         try {
-            // Get the appropriate parser for this sender
-            val parser = BankParserFactory.getParser(sender)
-            if (parser == null) {
-                return ProcessingResult(false, reason = "No parser found for sender: $sender")
-            }
-
-            // Parse the SMS
-            val parsedTransaction = parser.parse(body, sender, timestamp)
+            // Parse the SMS with automatic fallback to generic parser
+            val parsedTransaction = BankParserFactory.parseWithFallback(sender, body, timestamp)
             if (parsedTransaction == null) {
                 return ProcessingResult(false, reason = "Could not parse transaction from SMS")
             }
 
-            Log.d(TAG, "Parsed transaction: ${parsedTransaction.amount} from ${parsedTransaction.bankName}")
+            val parserType = if (parsedTransaction.parserConfidence < 1.0f) "(generic parser)" else ""
+            Log.d(TAG, "Parsed transaction: ${parsedTransaction.amount} from ${parsedTransaction.bankName} $parserType")
+
+            // Store original merchant name before alias application
+            val originalMerchant = parsedTransaction.merchant
+
+            // Apply merchant alias if one exists
+            val transactionWithAlias = applyMerchantAlias(parsedTransaction)
 
             // Check if confirmation is enabled and not bypassed
             val confirmationEnabled = userPreferencesRepository.getTransactionConfirmationEnabled()
             if (confirmationEnabled && !bypassConfirmation) {
-                return processWithConfirmation(parsedTransaction)
+                return processWithConfirmation(transactionWithAlias, originalMerchant)
             }
 
             // Direct save (confirmation disabled or bypassed)
-            return saveParsedTransaction(parsedTransaction, body)
+            return saveParsedTransaction(transactionWithAlias, body)
         } catch (e: Exception) {
             Log.e(TAG, "Error processing SMS", e)
             return ProcessingResult(false, reason = e.message)
@@ -103,9 +106,15 @@ class SmsTransactionProcessor @Inject constructor(
     /**
      * Processes a transaction with confirmation flow.
      * Adds to pending queue instead of direct save.
+     *
+     * @param parsedTransaction The parsed transaction (potentially with alias applied)
+     * @param originalMerchant The original merchant name before alias (null if same as current)
      */
-    private suspend fun processWithConfirmation(parsedTransaction: ParsedTransaction): ProcessingResult {
-        val result = pendingTransactionManager.addPendingTransaction(parsedTransaction)
+    private suspend fun processWithConfirmation(
+        parsedTransaction: ParsedTransaction,
+        originalMerchant: String? = null
+    ): ProcessingResult {
+        val result = pendingTransactionManager.addPendingTransaction(parsedTransaction, originalMerchant)
 
         return when (result) {
             is PendingTransactionManager.AddPendingResult.ShowDialog -> {
@@ -144,6 +153,23 @@ class SmsTransactionProcessor @Inject constructor(
                     reason = result.reason
                 )
             }
+        }
+    }
+
+    /**
+     * Applies merchant alias if one exists for the parsed merchant name.
+     * This is done early in the pipeline so that all subsequent processing
+     * (pending transactions, saved transactions) uses the alias name.
+     */
+    private suspend fun applyMerchantAlias(parsedTransaction: ParsedTransaction): ParsedTransaction {
+        val originalMerchant = parsedTransaction.merchant ?: return parsedTransaction
+
+        val alias = merchantAliasRepository.getAliasForMerchant(originalMerchant)
+        return if (alias != null) {
+            Log.d(TAG, "Applied merchant alias: $originalMerchant -> $alias")
+            parsedTransaction.copy(merchant = alias)
+        } else {
+            parsedTransaction
         }
     }
 
