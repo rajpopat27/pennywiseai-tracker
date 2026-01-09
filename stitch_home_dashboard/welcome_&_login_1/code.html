@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Welcome &amp; Login</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3713ec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#131022",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased">
+<!-- Main Mobile Container -->
+<div class="relative flex min-h-screen w-full flex-col overflow-hidden max-w-lg mx-auto bg-background-light dark:bg-background-dark shadow-2xl">
+<!-- Ambient Background Effects -->
+<div class="absolute top-0 left-0 w-full h-[60%] bg-gradient-to-b from-primary/5 to-transparent dark:from-primary/10 pointer-events-none z-0"></div>
+<!-- Subtle Abstract Shape in Background -->
+<div class="absolute top-[-10%] right-[-20%] w-[300px] h-[300px] bg-primary/5 rounded-full blur-3xl pointer-events-none z-0"></div>
+<!-- Content Wrapper -->
+<div class="flex flex-col flex-1 h-full relative z-10 px-6 pt-6 pb-8">
+<!-- Hero Illustration Area (Vertical Spacer) -->
+<div class="flex-1 flex flex-col items-center justify-center py-8">
+<div class="relative w-full aspect-square max-w-[320px] flex items-center justify-center">
+<!-- Decorative Circle Behind -->
+<div class="absolute inset-4 rounded-full bg-gradient-to-tr from-white to-blue-50 dark:from-slate-800 dark:to-background-dark shadow-[0_20px_60px_-15px_rgba(55,19,236,0.1)] opacity-80"></div>
+<!-- Main Hero Image -->
+<div class="w-full h-full bg-center bg-contain bg-no-repeat relative z-10 drop-shadow-2xl transform hover:scale-[1.02] transition-transform duration-700 ease-out" data-alt="Abstract 3D blue and purple shapes representing financial growth" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDv0V8nWRo97gJnjhm19qwWjAPUKz6hEpwivoBmr1aEFX1vi3IC2PKTODRGHn-UKrHoz-ea5BLaiIXWevAPM8d4HytoXCOefmFpJ9cfZpSR1kJDf3WdFNM_2jd7f2aYhRCwY76x_MrAcSqkTg_jKqQBvmT4zURr_kXtrwyAa3WsslkZ2HHhAqsQxYmQwbzdQJGBGhF9KlBwURFbZOpY8KUIWa85lY0dzlGsyFvIg6O57BIA3bWuBLh40jfeJ0x_L-VbRnrcIKrRKw");'>
+</div>
+</div>
+</div>
+<!-- Text & Actions Section -->
+<div class="flex flex-col items-center w-full">
+<!-- Typography -->
+<div class="text-center mb-10 space-y-3">
+<h1 class="text-slate-900 dark:text-white tracking-tight text-[32px] sm:text-[36px] font-extrabold leading-[1.1]">
+                        Smart spending,<br/>simplified.
+                    </h1>
+<p class="text-slate-500 dark:text-slate-400 text-[17px] font-medium leading-relaxed max-w-[280px] mx-auto">
+                        Track expenses, budget effortlessly, and save more.
+                    </p>
+</div>
+<!-- Buttons -->
+<div class="w-full flex flex-col gap-4 mb-4">
+<!-- Get Started (Primary) -->
+<button class="group relative flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 px-8 bg-primary text-white text-[17px] font-bold leading-normal tracking-[0.015em] transition-all hover:shadow-lg hover:shadow-primary/30 active:scale-[0.98]">
+<span class="relative z-10">Get Started</span>
+</button>
+<!-- Log In (Secondary) -->
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 px-8 bg-primary/10 dark:bg-white/5 text-primary dark:text-white text-[17px] font-bold leading-normal tracking-[0.015em] transition-colors hover:bg-primary/15 dark:hover:bg-white/10 active:scale-[0.98]">
+<span class="truncate">Log In</span>
+</button>
+</div>
+<!-- Trust / Biometrics Icon -->
+<div class="mt-4 flex flex-col items-center gap-2 opacity-50 hover:opacity-80 transition-opacity cursor-pointer">
+<span class="material-symbols-outlined text-[32px] text-primary dark:text-white">face</span>
+</div>
+</div>
+</div>
+</div>
+</body></html>

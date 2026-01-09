@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add New Account Refined</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3713ec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#131022",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1e1b2e",
+                        "text-main": "#100d1b",
+                        "text-sub": "#594c9a",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem", 
+                        "lg": "1.5rem", 
+                        "xl": "2rem", 
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        "subtle": "0 2px 10px rgba(0, 0, 0, 0.03)",
+                        "card": "0 4px 20px rgba(0, 0, 0, 0.05)",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }select {
+            appearance: none;
+            background-image: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-main dark:text-white transition-colors duration-200">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-32">
+<div class="sticky top-0 z-50 flex flex-col gap-2 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md px-4 pt-4 pb-2 transition-colors duration-200 border-b border-gray-200/50 dark:border-white/5">
+<div class="flex items-center h-12 justify-between">
+<button class="flex size-10 items-center justify-center rounded-full text-primary hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[28px]">arrow_back_ios_new</span>
+</button>
+<div class="flex gap-2">
+<button class="flex size-10 items-center justify-center rounded-full text-text-main dark:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+</div>
+<h1 class="text-text-main dark:text-white tracking-tight text-[32px] font-extrabold leading-tight px-1">Add New Account</h1>
+</div>
+<div class="flex flex-col px-4 mt-6 gap-8">
+<div class="flex flex-col gap-3">
+<h3 class="text-text-sub dark:text-gray-400 text-xs font-bold uppercase tracking-wider px-4">Bank Provider</h3>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-gray-400 group-focus-within:text-primary transition-colors">search</span>
+</div>
+<input class="block w-full pl-12 pr-4 py-4 rounded-xl border-none bg-surface-light dark:bg-surface-dark text-text-main dark:text-white placeholder-gray-400 shadow-subtle focus:ring-2 focus:ring-primary/20 text-lg font-medium transition-all" placeholder="Search bank name..." type="text"/>
+</div>
+<div class="flex gap-4 overflow-x-auto pb-2 pt-1 px-1 snap-x no-scrollbar">
+<button class="snap-start shrink-0 flex flex-col items-center gap-2 group">
+<div class="relative flex items-center justify-center size-14 rounded-full bg-[#E31837] text-white shadow-md ring-4 ring-transparent group-hover:ring-gray-200 dark:group-hover:ring-gray-700 transition-all">
+<span class="material-symbols-outlined text-[28px]">account_balance</span>
+<div class="absolute -bottom-1 -right-1 bg-primary text-white size-5 rounded-full flex items-center justify-center border-2 border-surface-light dark:border-surface-dark">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+</div>
+<span class="text-xs font-semibold text-text-main dark:text-white">Citibank</span>
+</button>
+<button class="snap-start shrink-0 flex flex-col items-center gap-2 group opacity-60 hover:opacity-100 transition-opacity">
+<div class="relative flex items-center justify-center size-14 rounded-full bg-[#00558F] text-white shadow-sm group-active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[28px]">savings</span>
+</div>
+<span class="text-xs font-medium text-gray-500 dark:text-gray-400">Chase</span>
+</button>
+<button class="snap-start shrink-0 flex flex-col items-center gap-2 group opacity-60 hover:opacity-100 transition-opacity">
+<div class="relative flex items-center justify-center size-14 rounded-full bg-black text-white shadow-sm group-active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[28px]">diamond</span>
+</div>
+<span class="text-xs font-medium text-gray-500 dark:text-gray-400">Amex</span>
+</button>
+<button class="snap-start shrink-0 flex flex-col items-center gap-2 group opacity-60 hover:opacity-100 transition-opacity">
+<div class="relative flex items-center justify-center size-14 rounded-full bg-[#007AC2] text-white shadow-sm group-active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[28px]">payments</span>
+</div>
+<span class="text-xs font-medium text-gray-500 dark:text-gray-400">PayPal</span>
+</button>
+<button class="snap-start shrink-0 flex flex-col items-center gap-2 group opacity-60 hover:opacity-100 transition-opacity">
+<div class="relative flex items-center justify-center size-14 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 shadow-sm group-active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[28px]">add</span>
+</div>
+<span class="text-xs font-medium text-gray-500 dark:text-gray-400">Other</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<h3 class="text-text-sub dark:text-gray-400 text-xs font-bold uppercase tracking-wider px-4">Account Details</h3>
+<div class="flex flex-col bg-surface-light dark:bg-surface-dark rounded-xl shadow-subtle overflow-hidden divide-y divide-gray-100 dark:divide-gray-800">
+<div class="flex items-center justify-between p-4 group focus-within:bg-gray-50 dark:focus-within:bg-white/5 transition-colors">
+<label class="text-base font-medium text-text-main dark:text-white whitespace-nowrap w-1/3">Nickname</label>
+<input class="w-full bg-transparent border-none p-0 text-right text-base text-primary font-semibold placeholder-gray-400 focus:ring-0" placeholder="e.g. Travel Card" type="text" value="Citi Premier"/>
+</div>
+<div class="relative flex items-center justify-between p-4 group hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<label class="text-base font-medium text-text-main dark:text-white whitespace-nowrap w-1/3">Default Cashback</label>
+<div class="flex items-center justify-end w-full gap-2">
+<select class="w-full bg-transparent border-none p-0 text-right text-base text-text-sub dark:text-gray-300 font-medium focus:ring-0 cursor-pointer pr-6">
+<option>1% Flat Rate</option>
+<option>1.5% Flat Rate</option>
+<option selected="">2% Flat Rate</option>
+<option>3% Dining / 1% Other</option>
+<option>5% Rotating Categories</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 text-gray-400 pointer-events-none text-sm">unfold_more</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed bottom-0 left-0 w-full p-4 bg-gradient-to-t from-background-light via-background-light to-transparent dark:from-background-dark dark:via-background-dark pt-12 pb-6 z-40">
+<button class="w-full h-14 bg-primary hover:bg-primary/90 active:scale-[0.98] text-white rounded-full font-bold text-lg shadow-xl shadow-primary/20 flex items-center justify-center gap-2 transition-all">
+                Save Account
+            </button>
+</div>
+</div>
+</body></html>

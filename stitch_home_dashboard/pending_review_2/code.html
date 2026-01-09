@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pending Review</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#0a0a0a",
+                        "card-dark": "#1c1c1e",
+                        "surface-dark": "#2c2c2e",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem", 
+                        "xl": "1rem",   
+                        "2xl": "1.25rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased selection:bg-primary/30">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-12">
+<header class="sticky top-0 z-50 flex items-center justify-between bg-background-light/80 dark:bg-background-dark/80 px-5 py-4 backdrop-blur-md transition-colors duration-300 border-b border-slate-200/50 dark:border-white/5">
+<div>
+<h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Pending Review</h1>
+<p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">3 New Transactions</p>
+</div>
+<button class="flex items-center justify-center rounded-full px-3 py-1.5 text-sm font-bold text-primary hover:bg-primary/10 transition-colors">
+                Confirm All
+            </button>
+</header>
+<main class="flex flex-col gap-3 px-4 pt-4">
+<div class="flex items-center justify-center gap-2 py-1 mb-2">
+<span class="material-symbols-outlined text-[16px] text-green-500">sync</span>
+<p class="text-xs font-medium text-slate-500 dark:text-slate-400">Sync complete: 12 mins ago from SMS</p>
+</div>
+<a class="group relative flex items-center justify-between rounded-2xl bg-white dark:bg-card-dark shadow-sm border border-slate-200 dark:border-white/5 p-5 transition-all duration-200 hover:bg-slate-50 dark:hover:bg-white/5 active:scale-[0.98]" href="#">
+<div class="flex items-center gap-3">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-surface-dark group-hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300 group-hover:text-primary">local_taxi</span>
+</div>
+<div class="flex flex-col">
+<h3 class="font-bold text-slate-900 dark:text-white text-base">Uber</h3>
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400">Today, 2:42 PM</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-base font-bold text-slate-900 dark:text-white">$24.50</span>
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</div>
+</a>
+<a class="group relative flex items-center justify-between rounded-2xl bg-white dark:bg-card-dark shadow-sm border border-slate-200 dark:border-white/5 p-5 transition-all duration-200 hover:bg-slate-50 dark:hover:bg-white/5 active:scale-[0.98]" href="#">
+<div class="flex items-center gap-3">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-surface-dark group-hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300 group-hover:text-primary">coffee</span>
+</div>
+<div class="flex flex-col">
+<h3 class="font-bold text-slate-900 dark:text-white text-base">Starbucks</h3>
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400">Yesterday, 9:15 AM</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-base font-bold text-slate-900 dark:text-white">$12.80</span>
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</div>
+</a>
+<a class="group relative flex items-center justify-between rounded-2xl bg-white dark:bg-card-dark shadow-sm border border-slate-200 dark:border-white/5 p-5 transition-all duration-200 hover:bg-slate-50 dark:hover:bg-white/5 active:scale-[0.98]" href="#">
+<div class="flex items-center gap-3">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-surface-dark group-hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300 group-hover:text-primary">subscriptions</span>
+</div>
+<div class="flex flex-col">
+<h3 class="font-bold text-slate-900 dark:text-white text-base">Apple.com</h3>
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400">Sep 28, 6:00 PM</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-base font-bold text-slate-900 dark:text-white">$9.99</span>
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</div>
+</a>
+<div class="h-24"></div>
+</main>
+<div class="fixed bottom-6 right-6 z-40">
+<button class="flex items-center justify-center gap-2 rounded-full bg-slate-800 dark:bg-slate-700 px-5 py-3 text-sm font-bold text-white shadow-2xl hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined text-[20px]">qr_code_scanner</span>
+                Scan SMS
+            </button>
+</div>
+</div>
+
+</body></html>

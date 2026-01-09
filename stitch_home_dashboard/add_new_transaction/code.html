@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add New Transaction</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1c2533",
+                        "text-main": "#0d121b",
+                        "text-sub": "#4f5b6e",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem", 
+                        "lg": "1.25rem", 
+                        "xl": "1.5rem", 
+                        "2xl": "2rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+        /* Custom scrollbar hiding for cleaner mobile look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-text-main transition-colors duration-200 min-h-screen flex flex-col relative overflow-hidden">
+<!-- Header -->
+<header class="flex items-center justify-between px-4 py-2 pt-6 bg-background-light dark:bg-background-dark shrink-0 z-20">
+<button class="text-primary text-[17px] font-medium px-2 py-2 hover:opacity-80 transition-opacity">
+            Cancel
+        </button>
+<h2 class="text-text-main dark:text-white text-[17px] font-bold leading-tight tracking-[-0.015em] text-center">
+            New Transaction
+        </h2>
+<!-- Empty placeholder for balance/centering -->
+<div class="w-[70px]"></div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto no-scrollbar pb-32">
+<!-- Hero Amount Input -->
+<div class="flex flex-col items-center justify-center pt-8 pb-10 px-4">
+<div class="relative flex items-center justify-center">
+<span class="text-text-main dark:text-white text-[64px] font-extrabold tracking-tight leading-none">$0.00</span>
+<!-- Blinking Cursor Simulation -->
+<div class="w-[3px] h-[50px] bg-primary ml-1 animate-pulse rounded-full"></div>
+</div>
+<p class="text-text-sub text-sm font-medium mt-2 dark:text-gray-400">Enter amount</p>
+</div>
+<!-- Selection Stack (Grouped List) -->
+<div class="px-4 space-y-6">
+<!-- Group 1: Details -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800">
+<!-- Date -->
+<div class="group flex items-center gap-4 p-4 min-h-[64px] justify-between cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors border-b border-gray-100 dark:border-gray-800">
+<div class="flex items-center gap-4">
+<div class="text-white flex items-center justify-center rounded-full bg-orange-400 shrink-0 size-10 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">calendar_today</span>
+</div>
+<p class="text-text-main dark:text-white text-base font-semibold leading-normal flex-1 truncate">Date</p>
+</div>
+<div class="flex items-center gap-2">
+<p class="text-primary text-[17px] font-medium leading-normal">Today, Oct 24</p>
+</div>
+</div>
+<!-- Account -->
+<div class="group flex items-center gap-4 p-4 min-h-[64px] justify-between cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors border-b border-gray-100 dark:border-gray-800">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-10 w-10 shrink-0 shadow-sm bg-gray-100" data-alt="Chase bank logo abstract blue hexagon pattern" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDT73MZ2GPWMM_JZ2iCV5--Xds3RTdZiAtMbuNAGC9DDlqFIsb7NHDGgPek-eZb526zmD0z1WTVd8QGG-soTHoZxUsvF8680ZR1lFI6SvwFmA4ZsvHTEa7Hvycly70RaCDylWNB7h4ZS_6V-WlvnsuVpRH78fBvJuYr_ij0Q8aqbGlM_IC_lwT7pakWl4MLDuBkJ-ZLz27gZQ7iBVGSTJbRbGPqJrOynv8XFIMxo5GvsVTZFv2MCFd8JmNS3LtbFOsgDwQjCwY35A");'></div>
+<p class="text-text-main dark:text-white text-base font-semibold leading-normal flex-1 truncate">Account</p>
+</div>
+<div class="flex items-center gap-2">
+<p class="text-text-sub dark:text-gray-400 text-[17px] font-normal leading-normal truncate max-w-[140px]">Checking ...4589</p>
+<span class="material-symbols-outlined text-gray-400 text-xl">chevron_right</span>
+</div>
+</div>
+<!-- Category -->
+<div class="group flex items-center gap-4 p-4 min-h-[64px] justify-between cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors border-b border-gray-100 dark:border-gray-800">
+<div class="flex items-center gap-4">
+<div class="text-white flex items-center justify-center rounded-full bg-emerald-500 shrink-0 size-10 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">shopping_bag</span>
+</div>
+<p class="text-text-main dark:text-white text-base font-semibold leading-normal flex-1 truncate">Category</p>
+</div>
+<div class="flex items-center gap-2">
+<p class="text-text-sub dark:text-gray-400 text-[17px] font-normal leading-normal">Groceries</p>
+<span class="material-symbols-outlined text-gray-400 text-xl">chevron_right</span>
+</div>
+</div>
+<!-- Merchant Autocomplete -->
+<div class="group flex items-center gap-4 p-4 min-h-[64px] justify-between cursor-pointer active:bg-gray-50 dark:active:bg-gray-800 transition-colors">
+<div class="flex items-center gap-4 flex-1">
+<div class="text-white flex items-center justify-center rounded-full bg-purple-500 shrink-0 size-10 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">storefront</span>
+</div>
+<div class="flex-1">
+<input class="w-full bg-transparent border-none p-0 text-[17px] placeholder-gray-400 dark:placeholder-gray-500 text-text-main dark:text-white focus:ring-0 leading-normal" placeholder="Merchant name" type="text" value="Trader Joe's"/>
+</div>
+</div>
+<div class="shrink-0">
+<span class="material-symbols-outlined text-gray-400 text-xl">search</span>
+</div>
+</div>
+</div>
+<!-- Group 2: Notes -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800 p-4">
+<div class="flex gap-4">
+<div class="text-gray-400 dark:text-gray-500 flex items-start pt-1 justify-center shrink-0 size-10">
+<span class="material-symbols-outlined text-[24px]">notes</span>
+</div>
+<textarea class="w-full bg-transparent border-none p-0 pt-1 text-base text-text-main dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-0 resize-none" placeholder="Add a note..." rows="3"></textarea>
+</div>
+</div>
+</div>
+</main>
+<!-- Sticky Footer Action -->
+<div class="fixed bottom-0 left-0 w-full p-4 pb-8 bg-gradient-to-t from-background-light via-background-light to-transparent dark:from-background-dark dark:via-background-dark z-30 pointer-events-none">
+<div class="pointer-events-auto">
+<button class="w-full h-[56px] rounded-full bg-primary hover:bg-blue-600 active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 group">
+<span class="text-white font-bold text-[17px] tracking-wide">Save Transaction</span>
+</button>
+</div>
+</div>
+</body></html>

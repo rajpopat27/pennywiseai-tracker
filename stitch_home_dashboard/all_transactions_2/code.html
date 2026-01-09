@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>All Transactions</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1c2533",
+                        "border-light": "#e2e8f0",
+                        "border-dark": "#2d3748",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "2xl": "2rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }.no-scrollbar {
+            -ms-overflow-style: none;scrollbar-width: none;}
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased min-h-screen flex flex-col overflow-x-hidden selection:bg-primary selection:text-white">
+<header class="sticky top-0 z-50 w-full bg-background-light/85 dark:bg-background-dark/85 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50">
+<div class="flex items-center justify-between px-4 py-3 max-w-md mx-auto w-full">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-slate-900 dark:text-white" style="font-size: 24px;">arrow_back_ios_new</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight text-center flex-1">All Transactions</h1>
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-primary" style="font-size: 24px;">ios_share</span>
+</button>
+</div>
+</header>
+<main class="flex-1 w-full max-w-md mx-auto pb-24">
+<div class="px-4 py-4">
+<div class="relative flex items-center w-full h-12 rounded-xl bg-surface-light dark:bg-surface-dark shadow-sm ring-1 ring-gray-900/5 dark:ring-white/10 focus-within:ring-2 focus-within:ring-primary transition-all">
+<div class="grid place-items-center h-full w-12 text-gray-400">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="peer h-full w-full outline-none bg-transparent text-sm text-slate-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 pr-4" id="search" placeholder="Search merchant, category..." type="text"/>
+</div>
+</div>
+<div class="flex items-center justify-between px-4 pb-2">
+<button class="flex items-center gap-2 px-4 h-10 rounded-full bg-surface-light dark:bg-surface-dark ring-1 ring-gray-200 dark:ring-gray-700 hover:ring-gray-300 dark:hover:ring-gray-600 transition-all active:scale-95 group">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">tune</span>
+<span class="text-sm font-bold text-slate-700 dark:text-gray-200">Filters • 3</span>
+</button>
+<p class="text-slate-500 dark:text-gray-400 text-sm font-medium">Showing 12 results</p>
+</div>
+<div class="flex flex-col gap-6 px-4 pt-2">
+<div class="flex flex-col gap-3">
+<h4 class="text-slate-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider pl-1">August 30</h4>
+<div class="bg-surface-light dark:bg-surface-dark rounded-2xl overflow-hidden shadow-sm ring-1 ring-gray-900/5 dark:ring-white/5">
+<div class="group flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="relative size-12 rounded-xl bg-green-100 dark:bg-green-900/30 overflow-hidden shrink-0">
+<div class="absolute inset-0 grid place-items-center text-green-700 dark:text-green-400" data-alt="Whole Foods logo placeholder">
+<span class="material-symbols-outlined">eco</span>
+</div>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-base font-bold leading-tight">Whole Foods Market</p>
+<p class="text-slate-500 dark:text-gray-400 text-xs font-medium mt-0.5">Groceries</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex flex-col items-end">
+<p class="text-slate-900 dark:text-white text-base font-bold">-$154.20</p>
+<span class="text-[10px] font-bold tracking-wide text-primary bg-primary/10 px-2 py-0.5 rounded-md mt-0.5">AMEX</span>
+</div>
+<span class="material-symbols-outlined text-gray-400 text-xl">chevron_right</span>
+</div>
+</div>
+<div class="group flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="relative size-12 rounded-xl bg-red-100 dark:bg-red-900/30 overflow-hidden shrink-0">
+<div class="absolute inset-0 grid place-items-center text-red-700 dark:text-red-400" data-alt="Trader Joes logo placeholder">
+<span class="material-symbols-outlined">storefront</span>
+</div>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-base font-bold leading-tight">Trader Joe's</p>
+<p class="text-slate-500 dark:text-gray-400 text-xs font-medium mt-0.5">Groceries</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex flex-col items-end">
+<p class="text-slate-900 dark:text-white text-base font-bold">-$85.50</p>
+<span class="text-[10px] font-bold tracking-wide text-primary bg-primary/10 px-2 py-0.5 rounded-md mt-0.5">AMEX</span>
+</div>
+<span class="material-symbols-outlined text-gray-400 text-xl">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<h4 class="text-slate-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider pl-1">August 25</h4>
+<div class="bg-surface-light dark:bg-surface-dark rounded-2xl overflow-hidden shadow-sm ring-1 ring-gray-900/5 dark:ring-white/5">
+<div class="group flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="relative size-12 rounded-xl bg-orange-100 dark:bg-orange-900/30 overflow-hidden shrink-0">
+<div class="absolute inset-0 grid place-items-center text-orange-700 dark:text-orange-400" data-alt="Costco logo placeholder">
+<span class="material-symbols-outlined">shopping_cart</span>
+</div>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-base font-bold leading-tight">Costco Wholesale</p>
+<p class="text-slate-500 dark:text-gray-400 text-xs font-medium mt-0.5">Groceries</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex flex-col items-end">
+<p class="text-slate-900 dark:text-white text-base font-bold">-$210.00</p>
+<span class="text-[10px] font-bold tracking-wide text-primary bg-primary/10 px-2 py-0.5 rounded-md mt-0.5">AMEX</span>
+</div>
+<span class="material-symbols-outlined text-gray-400 text-xl">chevron_right</span>
+</div>
+</div>
+<div class="group flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="relative size-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 overflow-hidden shrink-0">
+<div class="absolute inset-0 grid place-items-center text-blue-700 dark:text-blue-400" data-alt="H-Mart logo placeholder">
+<span class="material-symbols-outlined">local_mall</span>
+</div>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-base font-bold leading-tight">H-Mart</p>
+<p class="text-slate-500 dark:text-gray-400 text-xs font-medium mt-0.5">Groceries</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex flex-col items-end">
+<p class="text-slate-900 dark:text-white text-base font-bold">-$64.25</p>
+<span class="text-[10px] font-bold tracking-wide text-primary bg-primary/10 px-2 py-0.5 rounded-md mt-0.5">AMEX</span>
+</div>
+<span class="material-symbols-outlined text-gray-400 text-xl">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<button class="fixed bottom-6 right-6 size-14 rounded-full bg-primary text-white shadow-2xl shadow-primary/40 hover:bg-blue-600 transition-all active:scale-95 grid place-items-center z-50">
+<span class="material-symbols-outlined" style="font-size: 28px;">add</span>
+</button>
+</body></html>

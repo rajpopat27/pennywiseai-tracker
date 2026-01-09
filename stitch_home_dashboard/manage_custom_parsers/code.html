@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Manage Custom Parsers</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                        "card-dark": "#1A2230", 
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"],
+                        "mono": ["Roboto Mono", "monospace"],
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#111418] dark:text-white font-display antialiased min-h-screen selection:bg-primary selection:text-white overflow-x-hidden">
+<div class="relative flex flex-col w-full max-w-md mx-auto min-h-screen">
+<header class="sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-colors duration-200">
+<div class="flex items-center justify-between px-4 py-3">
+<button class="flex items-center justify-center w-10 h-10 rounded-full text-[#111418] dark:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold leading-tight">Manage Parsers</h1>
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-white hover:bg-blue-600 shadow-lg shadow-blue-500/30 transition-all active:scale-95">
+<span class="material-symbols-outlined text-2xl">add</span>
+</button>
+</div>
+</header>
+<main class="flex-1 px-4 py-4 flex flex-col gap-6">
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-gray-400">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-3 rounded-xl border-none bg-white dark:bg-card-dark text-[#111418] dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary focus:outline-none shadow-sm text-base" placeholder="Search parsers..." type="text"/>
+</div>
+<div class="flex flex-col gap-3">
+<h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider px-1">Active Parsers</h3>
+<div class="group relative flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-card-dark shadow-sm active:scale-[0.99] transition-transform duration-100 cursor-pointer border border-transparent dark:border-gray-800/50 hover:border-primary/30">
+<div class="flex items-center justify-center shrink-0 w-12 h-12 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined text-2xl">account_balance</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0 gap-1">
+<p class="text-base font-bold text-[#111418] dark:text-white truncate">Chase Bank SMS</p>
+<p class="text-xs text-gray-500 dark:text-gray-400 font-mono truncate bg-gray-100 dark:bg-[#111722] px-1.5 py-0.5 rounded w-fit max-w-full">
+                            (?i)chase\s+at\s+(?&lt;merchant&gt;.+?)...
+                        </p>
+</div>
+<div class="shrink-0 text-gray-400 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+<div class="group relative flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-card-dark shadow-sm active:scale-[0.99] transition-transform duration-100 cursor-pointer border border-transparent dark:border-gray-800/50 hover:border-primary/30">
+<div class="flex items-center justify-center shrink-0 w-12 h-12 rounded-lg bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400">
+<span class="material-symbols-outlined text-2xl">credit_card</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0 gap-1">
+<p class="text-base font-bold text-[#111418] dark:text-white truncate">Amex Global</p>
+<p class="text-xs text-gray-500 dark:text-gray-400 font-mono truncate bg-gray-100 dark:bg-[#111722] px-1.5 py-0.5 rounded w-fit max-w-full">
+                            large transaction approved\s+(?&lt;currency...
+                        </p>
+</div>
+<div class="shrink-0 text-gray-400 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+<div class="group relative flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-card-dark shadow-sm active:scale-[0.99] transition-transform duration-100 cursor-pointer border border-transparent dark:border-gray-800/50 hover:border-primary/30">
+<div class="flex items-center justify-center shrink-0 w-12 h-12 rounded-lg bg-green-500/10 dark:bg-green-500/20 text-green-600 dark:text-green-400">
+<span class="material-symbols-outlined text-2xl">receipt_long</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0 gap-1">
+<p class="text-base font-bold text-[#111418] dark:text-white truncate">Uber Receipts</p>
+<p class="text-xs text-gray-500 dark:text-gray-400 font-mono truncate bg-gray-100 dark:bg-[#111722] px-1.5 py-0.5 rounded w-fit max-w-full">
+                            receipt from uber\s+(?&lt;amount&gt;[\d\.]+)
+                        </p>
+</div>
+<div class="shrink-0 text-gray-400 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+<div class="group relative flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-card-dark shadow-sm active:scale-[0.99] transition-transform duration-100 cursor-pointer border border-transparent dark:border-gray-800/50 hover:border-primary/30">
+<div class="flex items-center justify-center shrink-0 w-12 h-12 rounded-lg bg-orange-500/10 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400">
+<span class="material-symbols-outlined text-2xl">notifications_active</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0 gap-1">
+<p class="text-base font-bold text-[#111418] dark:text-white truncate">PayPal Alerts</p>
+<p class="text-xs text-gray-500 dark:text-gray-400 font-mono truncate bg-gray-100 dark:bg-[#111722] px-1.5 py-0.5 rounded w-fit max-w-full">
+                            sent\s+(?&lt;amount&gt;[\d\.]+)\s+to\s+(?&lt;recip...
+                        </p>
+</div>
+<div class="shrink-0 text-gray-400 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+</div>
+</main>
+<div class="h-6 w-full"></div>
+</div>
+
+</body></html>

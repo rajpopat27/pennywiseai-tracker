@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Spending Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "primary-content": "#ffffff",
+                        "secondary": "#a8c5ff",
+                        "accent": "#ffb703",
+                        "success": "#34c759",
+                        "background-light": "#f2f2f7", // iOS light gray
+                        "background-dark": "#000000", // iOS pure black OLED
+                        "surface-dark": "#1c1c1e", // iOS dark gray card
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Manrope", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "2xl": "2rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>.hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased transition-colors duration-200">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark">
+<header class="flex items-center px-4 pt-12 pb-2 justify-between sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+<button class="text-black dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition">
+<span class="material-symbols-outlined text-[24px]">arrow_back_ios_new</span>
+</button>
+<h1 class="text-black dark:text-white text-[17px] font-bold leading-tight tracking-tight flex-1 text-center pr-10">Analytics</h1>
+</header>
+<div class="px-4 pt-4 pb-6 flex items-center gap-3">
+<div class="flex-1 flex h-10 items-center rounded-lg bg-[#e3e3e8] dark:bg-[#1c1c1e] p-[2px]">
+<label class="flex-1 flex cursor-pointer h-full items-center justify-center rounded-[7px] text-[13px] font-medium transition-all duration-200 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white has-[:checked]:bg-white dark:has-[:checked]:bg-[#636366] has-[:checked]:text-black dark:has-[:checked]:text-white has-[:checked]:shadow-sm">
+<span>Week</span>
+<input class="invisible w-0 absolute" name="period" type="radio" value="week"/>
+</label>
+<label class="flex-1 flex cursor-pointer h-full items-center justify-center rounded-[7px] text-[13px] font-medium transition-all duration-200 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white has-[:checked]:bg-white dark:has-[:checked]:bg-[#636366] has-[:checked]:text-black dark:has-[:checked]:text-white has-[:checked]:shadow-sm">
+<span>Month</span>
+<input checked="" class="invisible w-0 absolute" name="period" type="radio" value="month"/>
+</label>
+<label class="flex-1 flex cursor-pointer h-full items-center justify-center rounded-[7px] text-[13px] font-medium transition-all duration-200 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white has-[:checked]:bg-white dark:has-[:checked]:bg-[#636366] has-[:checked]:text-black dark:has-[:checked]:text-white has-[:checked]:shadow-sm">
+<span>Year</span>
+<input class="invisible w-0 absolute" name="period" type="radio" value="year"/>
+</label>
+</div>
+<button class="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#e3e3e8] dark:bg-[#1c1c1e] text-gray-500 dark:text-gray-400 active:scale-95 transition-all hover:text-gray-900 dark:hover:text-white">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+<div class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary ring-2 ring-background-light dark:ring-background-dark">
+<span class="text-[9px] font-bold text-white leading-none">3</span>
+</div>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto pb-24 space-y-6">
+<section class="px-4">
+<div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-6 shadow-sm">
+<div class="flex flex-col items-center">
+<h2 class="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Total Spend</h2>
+<div class="text-black dark:text-white text-3xl font-bold tracking-tight mb-6">$2,450.00</div>
+<div class="relative size-56">
+<svg class="transform -rotate-90 w-full h-full" viewBox="0 0 100 100">
+<circle class="text-gray-200 dark:text-[#2c2c2e]" cx="50" cy="50" fill="none" r="40" stroke="currentColor" stroke-width="12"></circle>
+<circle class="drop-shadow-lg" cx="50" cy="50" fill="none" r="40" stroke="#135bec" stroke-dasharray="113 251" stroke-linecap="round" stroke-width="12"></circle>
+<circle cx="50" cy="50" fill="none" r="40" stroke="#a8c5ff" stroke-dasharray="75 251" stroke-dashoffset="-118" stroke-linecap="round" stroke-width="12"></circle>
+<circle cx="50" cy="50" fill="none" r="40" stroke="#ffb703" stroke-dasharray="37 251" stroke-dashoffset="-198" stroke-linecap="round" stroke-width="12"></circle>
+<circle cx="50" cy="50" fill="none" r="40" stroke="#34c759" stroke-dasharray="20 251" stroke-dashoffset="-240" stroke-linecap="round" stroke-width="12"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+<span class="text-gray-400 text-xs font-medium uppercase tracking-wider">Oct</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-x-8 gap-y-4 mt-8 w-full max-w-[300px]">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="size-3 rounded-full bg-primary"></div>
+<span class="text-gray-600 dark:text-gray-300 text-sm font-medium">Food</span>
+</div>
+<span class="text-black dark:text-white text-sm font-bold">45%</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="size-3 rounded-full bg-secondary"></div>
+<span class="text-gray-600 dark:text-gray-300 text-sm font-medium">Rent</span>
+</div>
+<span class="text-black dark:text-white text-sm font-bold">30%</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="size-3 rounded-full bg-[#ffb703]"></div>
+<span class="text-gray-600 dark:text-gray-300 text-sm font-medium">Shop</span>
+</div>
+<span class="text-black dark:text-white text-sm font-bold">15%</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="size-3 rounded-full bg-[#34c759]"></div>
+<span class="text-gray-600 dark:text-gray-300 text-sm font-medium">Auto</span>
+</div>
+<span class="text-black dark:text-white text-sm font-bold">10%</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="px-4">
+<div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-6 shadow-sm">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-black dark:text-white text-lg font-bold">Monthly Trend</h3>
+<button class="text-primary text-sm font-medium">View All</button>
+</div>
+<div class="flex items-end justify-between h-40 gap-2">
+<div class="flex flex-col items-center gap-2 w-full group">
+<div class="w-full max-w-[24px] bg-gray-200 dark:bg-[#2c2c2e] rounded-t-sm h-[40%] relative group-hover:bg-primary/50 transition-colors"></div>
+<span class="text-[10px] text-gray-400 font-medium">Jan</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full group">
+<div class="w-full max-w-[24px] bg-gray-200 dark:bg-[#2c2c2e] rounded-t-sm h-[65%] relative group-hover:bg-primary/50 transition-colors"></div>
+<span class="text-[10px] text-gray-400 font-medium">Feb</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full group">
+<div class="w-full max-w-[24px] bg-gray-200 dark:bg-[#2c2c2e] rounded-t-sm h-[50%] relative group-hover:bg-primary/50 transition-colors"></div>
+<span class="text-[10px] text-gray-400 font-medium">Mar</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full group">
+<div class="w-full max-w-[24px] bg-gray-200 dark:bg-[#2c2c2e] rounded-t-sm h-[80%] relative group-hover:bg-primary/50 transition-colors"></div>
+<span class="text-[10px] text-gray-400 font-medium">Apr</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full group">
+<div class="w-full max-w-[24px] bg-primary rounded-t-sm h-[95%] relative shadow-[0_0_10px_rgba(19,91,236,0.5)]"></div>
+<span class="text-[10px] text-primary font-bold">May</span>
+</div>
+<div class="flex flex-col items-center gap-2 w-full group">
+<div class="w-full max-w-[24px] bg-gray-200 dark:bg-[#2c2c2e] rounded-t-sm h-[60%] relative group-hover:bg-primary/50 transition-colors"></div>
+<span class="text-[10px] text-gray-400 font-medium">Jun</span>
+</div>
+</div>
+</div>
+</section>
+<section class="px-4">
+<div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black dark:from-[#1c1c1e] dark:to-[#000000] p-6 shadow-lg border border-gray-200/10">
+<div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-success/20 blur-3xl"></div>
+<div class="relative z-10 flex flex-col gap-1">
+<div class="flex items-center gap-2 mb-2">
+<div class="flex h-8 w-8 items-center justify-center rounded-full bg-success/10 text-success">
+<span class="material-symbols-outlined text-[18px]">paid</span>
+</div>
+<span class="text-sm font-semibold text-gray-300">Cashback Earned</span>
+</div>
+<div class="flex items-baseline gap-3">
+<h3 class="text-3xl font-bold text-white tracking-tight">+$124.50</h3>
+<span class="rounded-full bg-success/10 px-2 py-0.5 text-xs font-bold text-success">
+                                +12%
+                            </span>
+</div>
+<p class="text-xs text-gray-500 mt-2">Accumulated rewards from this fiscal year</p>
+</div>
+</div>
+</section>
+</div>
+<nav class="fixed bottom-0 z-50 w-full max-w-md border-t border-gray-200/10 bg-background-light/90 dark:bg-[#121212]/90 backdrop-blur-xl pb-6 pt-3">
+<div class="flex justify-around items-center">
+<a class="flex flex-col items-center gap-1 opacity-50 hover:opacity-100 transition" href="#">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400">dashboard</span>
+<span class="text-[10px] font-medium text-gray-500 dark:text-gray-400">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 opacity-50 hover:opacity-100 transition" href="#">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400">account_balance_wallet</span>
+<span class="text-[10px] font-medium text-gray-500 dark:text-gray-400">Budget</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined text-primary fill-current">pie_chart</span>
+<span class="text-[10px] font-bold text-primary">Analytics</span>
+</a>
+<a class="flex flex-col items-center gap-1 opacity-50 hover:opacity-100 transition" href="#">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400">person</span>
+<span class="text-[10px] font-medium text-gray-500 dark:text-gray-400">Profile</span>
+</a>
+</div>
+</nav>
+</div>
+</body></html>

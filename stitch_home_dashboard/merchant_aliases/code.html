@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Merchant Aliases</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3713ec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#131022",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"],
+                        "mono": ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", "monospace"],
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'glow': '0 0 15px rgba(55, 19, 236, 0.3)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white overflow-x-hidden min-h-screen relative flex flex-col pb-24">
+<header class="sticky top-0 z-50 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
+<div class="flex items-center justify-between px-4 h-16 max-w-2xl mx-auto w-full">
+<button class="flex items-center text-primary dark:text-indigo-400 hover:opacity-70 transition-opacity p-2 -ml-2 rounded-full active:bg-slate-200 dark:active:bg-slate-800">
+<span class="material-symbols-outlined text-2xl">arrow_back_ios_new</span>
+<span class="ml-1 text-base font-medium hidden sm:block">Settings</span>
+</button>
+<h1 class="text-lg font-bold text-slate-900 dark:text-white absolute left-1/2 -translate-x-1/2">
+            Merchant Aliases
+        </h1>
+<button class="text-primary dark:text-indigo-400 text-base font-bold hover:opacity-70 transition-opacity p-2 -mr-2">
+            Edit
+        </button>
+</div>
+</header>
+<main class="flex-1 w-full max-w-2xl mx-auto px-4 py-6 flex flex-col gap-6">
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500 group-focus-within:text-primary transition-colors">search</span>
+</div>
+<input class="block w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-800 border-none rounded-2xl text-base shadow-soft placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20 dark:focus:ring-primary/50 text-slate-900 dark:text-white transition-all" placeholder="Search raw or clean names..." type="text"/>
+</div>
+<div class="px-2">
+<p class="text-sm text-slate-500 dark:text-slate-400 font-medium">
+            Define rules to automatically rename messy transaction descriptions into clean merchant names.
+        </p>
+</div>
+<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-soft overflow-hidden divide-y divide-slate-100 dark:divide-slate-700/50">
+<div class="group relative flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors cursor-pointer gap-4">
+<div class="flex items-center gap-4 flex-1 min-w-0">
+<div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white shadow-sm shrink-0" data-alt="Amazon logo gradient placeholder">
+<span class="font-bold text-xl">A</span>
+</div>
+<div class="flex flex-col gap-1 min-w-0">
+<div class="flex items-center gap-2">
+<p class="text-base font-bold text-slate-900 dark:text-white truncate leading-tight">Amazon</p>
+<span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Alias</span>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-[14px] text-slate-400">arrow_right_alt</span>
+<span class="font-mono bg-slate-50 dark:bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-100 dark:border-slate-700/50 text-slate-600 dark:text-slate-300 truncate max-w-[160px] sm:max-w-[200px]">AMZN MKTP US*2B</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1 shrink-0 pl-2">
+<span class="text-xs font-medium text-slate-400 dark:text-slate-500">Shopping</span>
+<span class="material-symbols-outlined text-slate-300 dark:text-slate-600 group-hover:text-primary dark:group-hover:text-indigo-400 transition-colors">chevron_right</span>
+</div>
+</div>
+<div class="group relative flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors cursor-pointer gap-4">
+<div class="flex items-center gap-4 flex-1 min-w-0">
+<div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-600 to-emerald-500 flex items-center justify-center text-white shadow-sm shrink-0" data-alt="Starbucks logo gradient placeholder">
+<span class="font-bold text-xl">S</span>
+</div>
+<div class="flex flex-col gap-1 min-w-0">
+<div class="flex items-center gap-2">
+<p class="text-base font-bold text-slate-900 dark:text-white truncate leading-tight">Starbucks</p>
+<span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Alias</span>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-[14px] text-slate-400">arrow_right_alt</span>
+<span class="font-mono bg-slate-50 dark:bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-100 dark:border-slate-700/50 text-slate-600 dark:text-slate-300 truncate max-w-[160px] sm:max-w-[200px]">TST* SBUX #224</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1 shrink-0 pl-2">
+<span class="text-xs font-medium text-slate-400 dark:text-slate-500">Food &amp; Drink</span>
+<span class="material-symbols-outlined text-slate-300 dark:text-slate-600 group-hover:text-primary dark:group-hover:text-indigo-400 transition-colors">chevron_right</span>
+</div>
+</div>
+<div class="group relative flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors cursor-pointer gap-4">
+<div class="flex items-center gap-4 flex-1 min-w-0">
+<div class="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-sm shrink-0" data-alt="Uber logo gradient placeholder">
+<span class="font-bold text-xl">U</span>
+</div>
+<div class="flex flex-col gap-1 min-w-0">
+<div class="flex items-center gap-2">
+<p class="text-base font-bold text-slate-900 dark:text-white truncate leading-tight">Uber</p>
+<span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Alias</span>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-[14px] text-slate-400">arrow_right_alt</span>
+<span class="font-mono bg-slate-50 dark:bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-100 dark:border-slate-700/50 text-slate-600 dark:text-slate-300 truncate max-w-[160px] sm:max-w-[200px]">UBER *PENDING</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1 shrink-0 pl-2">
+<span class="text-xs font-medium text-slate-400 dark:text-slate-500">Transport</span>
+<span class="material-symbols-outlined text-slate-300 dark:text-slate-600 group-hover:text-primary dark:group-hover:text-indigo-400 transition-colors">chevron_right</span>
+</div>
+</div>
+<div class="group relative flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors cursor-pointer gap-4">
+<div class="flex items-center gap-4 flex-1 min-w-0">
+<div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-600 to-rose-700 flex items-center justify-center text-white shadow-sm shrink-0" data-alt="Netflix logo gradient placeholder">
+<span class="font-bold text-xl">N</span>
+</div>
+<div class="flex flex-col gap-1 min-w-0">
+<div class="flex items-center gap-2">
+<p class="text-base font-bold text-slate-900 dark:text-white truncate leading-tight">Netflix</p>
+<span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Alias</span>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-[14px] text-slate-400">arrow_right_alt</span>
+<span class="font-mono bg-slate-50 dark:bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-100 dark:border-slate-700/50 text-slate-600 dark:text-slate-300 truncate max-w-[160px] sm:max-w-[200px]">DDA PUR *NETFLIX</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1 shrink-0 pl-2">
+<span class="text-xs font-medium text-slate-400 dark:text-slate-500">Entertainment</span>
+<span class="material-symbols-outlined text-slate-300 dark:text-slate-600 group-hover:text-primary dark:group-hover:text-indigo-400 transition-colors">chevron_right</span>
+</div>
+</div>
+<div class="group relative flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors cursor-pointer gap-4">
+<div class="flex items-center gap-4 flex-1 min-w-0">
+<div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center text-white shadow-sm shrink-0" data-alt="Apple logo gradient placeholder">
+<span class="material-symbols-outlined text-2xl">star</span>
+</div>
+<div class="flex flex-col gap-1 min-w-0">
+<div class="flex items-center gap-2">
+<p class="text-base font-bold text-slate-900 dark:text-white truncate leading-tight">Apple</p>
+<span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Alias</span>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-[14px] text-slate-400">arrow_right_alt</span>
+<span class="font-mono bg-slate-50 dark:bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-100 dark:border-slate-700/50 text-slate-600 dark:text-slate-300 truncate max-w-[160px] sm:max-w-[200px]">APL* ITUNES.COM</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1 shrink-0 pl-2">
+<span class="text-xs font-medium text-slate-400 dark:text-slate-500">Subscriptions</span>
+<span class="material-symbols-outlined text-slate-300 dark:text-slate-600 group-hover:text-primary dark:group-hover:text-indigo-400 transition-colors">chevron_right</span>
+</div>
+</div>
+</div>
+</main>
+<div class="fixed bottom-6 left-0 right-0 px-4 z-40 flex justify-center pointer-events-none">
+<div class="w-full max-w-2xl pointer-events-auto">
+<button class="w-full h-14 bg-primary hover:bg-primary/90 active:scale-[0.98] text-white rounded-full shadow-glow shadow-primary/40 flex items-center justify-center gap-2 transition-all duration-200">
+<span class="material-symbols-outlined text-2xl">add</span>
+<span class="text-lg font-bold tracking-wide">Add New Alias</span>
+</button>
+</div>
+</div>
+<div class="fixed bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background-light dark:from-background-dark to-transparent pointer-events-none z-30"></div>
+
+</body></html>

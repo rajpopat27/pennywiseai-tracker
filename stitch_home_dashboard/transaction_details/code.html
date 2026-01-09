@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Transaction Details</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+            extend: {
+                colors: {
+                "primary": "#3713ec",
+                "background-light": "#f6f6f8",
+                "background-dark": "#131022",
+                "surface-light": "#ffffff",
+                "surface-dark": "#1e1b2e",
+                },
+                fontFamily: {
+                "display": ["Manrope", "sans-serif"]
+                },
+                borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+            },
+            },
+        }
+    </script>
+<style>.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white transition-colors duration-200">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark pb-10">
+<header class="sticky top-0 z-50 flex items-center justify-between p-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md transition-colors">
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[24px] text-slate-900 dark:text-white">arrow_back_ios_new</span>
+</button>
+<h2 class="text-lg font-bold leading-tight tracking-tight flex-1 text-center opacity-0 transition-opacity duration-300 scroll-trigger">Apple Store</h2> 
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[24px] text-slate-900 dark:text-white">ios_share</span>
+</button>
+</header>
+<div class="flex flex-col items-center pt-2 pb-8 px-6">
+<div class="mb-5 shadow-lg rounded-full">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-24 border-4 border-white dark:border-surface-dark shadow-sm" data-alt="Apple logo icon on grey background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBwBlbe6hO61R8JJlrXsA8Qc0apJQyYD6CedppKadU5TWATXAnXuevBwHPco-l5zqBtjcNzjMeC2jX1-1A2muiGosVaBEf04psVnb7wDhlwYPfSnUYIOX7mROXJNxg_ErpR70VQtqi5SIChgjuKD8Cuwmp4Saz9TbVpbhJNUDcbx-nTktAaA-0e-C6DEvqH5sRpPRZjSrlwiWfgK9lAJVxluIlsiZt2AF8fOcoKeFYS6-Ybpe9WxK4cy8RhYep5jPDo6DxVtImqlA");'>
+</div>
+</div>
+<div class="flex flex-col items-center justify-center gap-1">
+<h1 class="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">-$124.50</h1>
+<p class="text-slate-500 dark:text-slate-400 text-lg font-medium">Apple Store</p>
+</div>
+</div>
+<div class="mx-4 mb-6 overflow-hidden rounded-[24px] bg-surface-light dark:bg-surface-dark shadow-sm ring-1 ring-black/5 dark:ring-white/5">
+<div class="flex items-center gap-4 p-4 min-h-[64px] border-b border-gray-100 dark:border-gray-800">
+<div class="flex items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30 size-10 shrink-0 text-green-600 dark:text-green-400">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+</div>
+<div class="flex flex-1 justify-between items-center">
+<p class="text-base font-semibold text-slate-900 dark:text-white">Status</p>
+<p class="text-base font-medium text-slate-500 dark:text-slate-400">Cleared</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4 min-h-[64px] border-b border-gray-100 dark:border-gray-800">
+<div class="flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 size-10 shrink-0 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-[20px]">calendar_month</span>
+</div>
+<div class="flex flex-1 justify-between items-center">
+<p class="text-base font-semibold text-slate-900 dark:text-white">Date</p>
+<div class="flex flex-col items-end">
+<p class="text-base font-medium text-slate-500 dark:text-slate-400">Oct 24, 2023</p>
+<p class="text-xs font-normal text-slate-400 dark:text-slate-500">4:12 PM</p>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4 min-h-[64px] border-b border-gray-100 dark:border-gray-800">
+<div class="flex items-center justify-center rounded-full bg-primary/10 size-10 shrink-0 text-primary">
+<span class="material-symbols-outlined text-[20px]">devices</span>
+</div>
+<div class="flex flex-1 justify-between items-center">
+<p class="text-base font-semibold text-slate-900 dark:text-white">Category</p>
+<p class="text-base font-medium text-slate-500 dark:text-slate-400">Electronics</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4 min-h-[64px]">
+<div class="flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 size-10 shrink-0 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-[20px]">credit_card</span>
+</div>
+<div class="flex flex-1 justify-between items-center">
+<p class="text-base font-semibold text-slate-900 dark:text-white">Account</p>
+<p class="text-base font-medium text-slate-500 dark:text-slate-400">Chase •••• 4242</p>
+</div>
+</div>
+</div>
+<div class="px-4 mb-2">
+<button class="w-full h-14 bg-primary hover:bg-primary/90 active:scale-[0.98] transition-all rounded-full flex items-center justify-center gap-2 text-white font-bold text-base shadow-lg shadow-primary/25">
+<span class="material-symbols-outlined">receipt_long</span>
+                View Receipt
+            </button>
+</div>
+<div class="px-4 flex flex-col gap-3 mt-4">
+<button class="w-full h-14 bg-surface-light dark:bg-surface-dark hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-[0.98] transition-all rounded-full flex items-center justify-center gap-2 text-primary font-bold text-base border border-slate-200 dark:border-slate-700">
+<span class="material-symbols-outlined">edit</span>
+                Edit Transaction
+            </button>
+<button class="w-full py-4 text-red-500 hover:text-red-600 dark:hover:text-red-400 transition-colors text-base font-bold flex items-center justify-center gap-2">
+                Delete Transaction
+            </button>
+</div>
+<div class="h-6"></div>
+</div>
+
+</body></html>

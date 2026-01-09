@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>App Settings</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#135bec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1c2433",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>.toggle-checkbox:checked {
+            right: 0;
+            border-color: #135bec;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #135bec;
+        }.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white transition-colors duration-200">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-12">
+<header class="sticky top-0 z-50 flex flex-col bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md transition-colors border-b border-slate-200 dark:border-slate-800/50">
+<div class="flex items-center justify-between px-4 py-3">
+<div class="flex items-center gap-2 text-primary cursor-pointer">
+<span class="material-symbols-outlined text-[24px]">arrow_back_ios_new</span>
+<span class="text-base font-medium">Home</span>
+</div>
+<div class="w-16"></div> 
+</div>
+<div class="px-5 pb-3">
+<h1 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">Settings</h1>
+</div>
+</header>
+<main class="flex-1 px-4 pt-4 md:px-6 max-w-2xl mx-auto w-full">
+<section class="mb-6">
+<div class="flex items-center gap-4 rounded-xl bg-surface-light dark:bg-surface-dark p-4 shadow-sm border border-slate-100 dark:border-slate-800/60">
+<div class="relative shrink-0">
+<div class="h-16 w-16 rounded-full bg-cover bg-center border-2 border-primary/20" data-alt="Portrait of a smiling man with glasses" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD6QtRt7n3Trn3YQnlCux5OhdAvfPQKDlt6Ajv9neLoniKTYWLPUv_r_r2BBfNZwCrI0hAoIntizIkEJ71ao2g_wZYQggiaLfxLC8Xzy-60dzXbOB9Xh4tjLXZtExNE-K38WvZO74G1-hBdHt3pLpSXfXV6a4bpHPolvTPLOASHCjAm-c0tnknCqHzC3Wrc02XsAj2fHldz5JiCF-fahlekNUItLzsM3s21QiPCia7CvsuGXtwt016HSjKNeWz_OoRePNPHgAv23A');"></div>
+<div class="absolute -bottom-1 -right-1 flex items-center justify-center rounded-full bg-primary p-1 text-white border-2 border-surface-light dark:border-surface-dark">
+<span class="material-symbols-outlined text-[12px] font-bold">star</span>
+</div>
+</div>
+<div class="flex flex-col justify-center flex-1">
+<h2 class="text-xl font-bold leading-tight">Alex Morgan</h2>
+<div class="flex items-center gap-2 mt-0.5">
+<span class="inline-flex items-center rounded-full bg-primary/15 px-2 py-0.5 text-xs font-bold text-primary">
+                            PRO MEMBER
+                        </span>
+<span class="text-sm text-slate-500 dark:text-slate-400">alex@example.com</span>
+</div>
+</div>
+<button class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</section>
+<section class="mb-6">
+<h3 class="ml-4 mb-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Appearance</h3>
+<div class="overflow-hidden rounded-xl bg-surface-light dark:bg-surface-dark shadow-sm border border-slate-100 dark:border-slate-800/60">
+<div class="flex items-center justify-between p-4 active:bg-slate-50 dark:active:bg-slate-800/50 cursor-pointer transition-colors">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-md bg-blue-500 text-white shrink-0">
+<span class="material-symbols-outlined text-[20px]">dark_mode</span>
+</div>
+<span class="text-base font-medium">Theme</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-base text-slate-400">Dark</span>
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</div>
+</div>
+</div>
+</section>
+<section class="mb-6">
+<h3 class="ml-4 mb-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Preferences</h3>
+<div class="overflow-hidden rounded-xl bg-surface-light dark:bg-surface-dark shadow-sm border border-slate-100 dark:border-slate-800/60">
+<div class="flex items-center justify-between p-4 active:bg-slate-50 dark:active:bg-slate-800/50 cursor-pointer transition-colors relative group">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-500 text-white shrink-0">
+<span class="material-symbols-outlined text-[20px]">attach_money</span>
+</div>
+<span class="text-base font-medium">Base Currency</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-base text-slate-400">USD</span>
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</div>
+<div class="absolute bottom-0 left-[60px] right-0 h-px bg-slate-200 dark:bg-slate-800"></div>
+</div>
+<div class="flex items-center justify-between p-4 relative">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-md bg-indigo-500 text-white shrink-0">
+<span class="material-symbols-outlined text-[20px]">sms</span>
+</div>
+<div class="flex flex-col">
+<span class="text-base font-medium">SMS Auto-scan</span>
+</div>
+</div>
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer peer checked:translate-x-full transition-transform duration-200" id="toggle-sms" name="toggle" style="top: 2px; left: 2px;" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-7 rounded-full bg-slate-300 dark:bg-slate-700 cursor-pointer peer-checked:bg-primary transition-colors duration-200" for="toggle-sms"></label>
+</div>
+<div class="absolute bottom-0 left-[60px] right-0 h-px bg-slate-200 dark:bg-slate-800"></div>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark px-4 pb-3 pt-0 relative">
+<p class="text-[13px] text-slate-500 dark:text-slate-400 pl-[44px] leading-snug">
+                        Automatically parse transaction SMS from banks to update your expenses. Your data stays on device.
+                    </p>
+<div class="absolute bottom-0 left-[60px] right-0 h-px bg-slate-200 dark:bg-slate-800"></div>
+</div>
+<div class="flex items-center justify-between p-4 relative">
+<div class="flex items-center gap-3">
+<div class="w-8 shrink-0"></div> 
+<div class="flex flex-col">
+<span class="text-base font-medium">Transaction Confirmation</span>
+<span class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Send scanned transactions to pending</span>
+</div>
+</div>
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer peer checked:translate-x-full transition-transform duration-200" id="toggle-confirm" name="toggle-confirm" style="top: 2px; left: 2px;" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-7 rounded-full bg-slate-300 dark:bg-slate-700 cursor-pointer peer-checked:bg-primary transition-colors duration-200" for="toggle-confirm"></label>
+</div>
+<div class="absolute bottom-0 left-[60px] right-0 h-px bg-slate-200 dark:bg-slate-800"></div>
+</div>
+<div class="flex items-center justify-between p-4 active:bg-slate-50 dark:active:bg-slate-800/50 cursor-pointer transition-colors relative">
+<div class="flex items-center gap-3">
+<div class="w-8 shrink-0"></div> 
+<span class="text-base font-medium">Auto-scan Period</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-base text-slate-400">Real-time</span>
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</div>
+<div class="absolute bottom-0 left-[60px] right-0 h-px bg-slate-200 dark:bg-slate-800"></div>
+</div>
+<div class="flex items-center justify-between p-4 active:bg-slate-50 dark:active:bg-slate-800/50 cursor-pointer transition-colors">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-md bg-red-500 text-white shrink-0">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</div>
+<span class="text-base font-medium">Notifications</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</div>
+</div>
+</div>
+</section>
+<section class="mb-6">
+<h3 class="ml-4 mb-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Management</h3>
+<div class="overflow-hidden rounded-xl bg-surface-light dark:bg-surface-dark shadow-sm border border-slate-100 dark:border-slate-800/60">
+<div class="flex items-center justify-between p-4 active:bg-slate-50 dark:active:bg-slate-800/50 cursor-pointer transition-colors relative">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-md bg-orange-500 text-white shrink-0">
+<span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+</div>
+<span class="text-base font-medium">Accounts</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-base text-slate-400">2 Active</span>
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</div>
+<div class="absolute bottom-0 left-[60px] right-0 h-px bg-slate-200 dark:bg-slate-800"></div>
+</div>
+<div class="flex items-center justify-between p-4 active:bg-slate-50 dark:active:bg-slate-800/50 cursor-pointer transition-colors relative">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-md bg-purple-500 text-white shrink-0">
+<span class="material-symbols-outlined text-[20px]">category</span>
+</div>
+<span class="text-base font-medium">Categories</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</div>
+<div class="absolute bottom-0 left-[60px] right-0 h-px bg-slate-200 dark:bg-slate-800"></div>
+</div>
+<div class="flex items-center justify-between p-4 active:bg-slate-50 dark:active:bg-slate-800/50 cursor-pointer transition-colors relative">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-md bg-cyan-500 text-white shrink-0">
+<span class="material-symbols-outlined text-[20px]">code</span>
+</div>
+<span class="text-base font-medium">Custom Parser</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</div>
+<div class="absolute bottom-0 left-[60px] right-0 h-px bg-slate-200 dark:bg-slate-800"></div>
+</div>
+<div class="flex items-center justify-between p-4 active:bg-slate-50 dark:active:bg-slate-800/50 cursor-pointer transition-colors">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-md bg-pink-500 text-white shrink-0">
+<span class="material-symbols-outlined text-[20px]">storefront</span>
+</div>
+<span class="text-base font-medium">Merchant Aliases</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</div>
+</div>
+</div>
+</section>
+<section class="mb-6">
+<h3 class="ml-4 mb-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Data Management</h3>
+<div class="overflow-hidden rounded-xl bg-surface-light dark:bg-surface-dark shadow-sm border border-slate-100 dark:border-slate-800/60">
+<div class="flex items-center justify-between p-4 active:bg-slate-50 dark:active:bg-slate-800/50 cursor-pointer transition-colors relative">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-md bg-teal-500 text-white shrink-0">
+<span class="material-symbols-outlined text-[20px]">file_upload</span>
+</div>
+<span class="text-base font-medium">Import Data</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</div>
+<div class="absolute bottom-0 left-[60px] right-0 h-px bg-slate-200 dark:bg-slate-800"></div>
+</div>
+<div class="flex items-center justify-between p-4 active:bg-slate-50 dark:active:bg-slate-800/50 cursor-pointer transition-colors">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-md bg-teal-500 text-white shrink-0">
+<span class="material-symbols-outlined text-[20px]">file_download</span>
+</div>
+<span class="text-base font-medium">Export Data</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-base text-slate-400">CSV, JSON</span>
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</div>
+</div>
+</div>
+</section>
+<section class="mb-8">
+<h3 class="ml-4 mb-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">About</h3>
+<div class="overflow-hidden rounded-xl bg-surface-light dark:bg-surface-dark shadow-sm border border-slate-100 dark:border-slate-800/60">
+<div class="flex items-center justify-between p-4 active:bg-slate-50 dark:active:bg-slate-800/50 cursor-pointer transition-colors relative">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-md bg-slate-400 text-white shrink-0">
+<span class="material-symbols-outlined text-[20px]">help</span>
+</div>
+<span class="text-base font-medium">Help &amp; Support</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</div>
+<div class="absolute bottom-0 left-[60px] right-0 h-px bg-slate-200 dark:bg-slate-800"></div>
+</div>
+<div class="flex items-center justify-between p-4 active:bg-slate-50 dark:active:bg-slate-800/50 cursor-pointer transition-colors relative">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-md bg-slate-400 text-white shrink-0">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</div>
+<span class="text-base font-medium">Privacy Policy</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</div>
+<div class="absolute bottom-0 left-[60px] right-0 h-px bg-slate-200 dark:bg-slate-800"></div>
+</div>
+<div class="flex items-center justify-between p-4 active:bg-slate-50 dark:active:bg-slate-800/50 cursor-pointer transition-colors relative">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-md bg-slate-400 text-white shrink-0">
+<span class="material-symbols-outlined text-[20px]">ios_share</span>
+</div>
+<span class="text-base font-medium">Share App</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-[20px]">chevron_right</span>
+</div>
+<div class="absolute bottom-0 left-[60px] right-0 h-px bg-slate-200 dark:bg-slate-800"></div>
+</div>
+<div class="flex items-center justify-between p-4 active:bg-slate-50 dark:active:bg-slate-800/50 cursor-pointer transition-colors">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-md bg-transparent dark:bg-transparent text-red-500 shrink-0 border border-slate-200 dark:border-slate-700">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+</div>
+<span class="text-base font-medium text-red-500">Log Out</span>
+</div>
+</div>
+</div>
+</section>
+<footer class="text-center py-4">
+<p class="text-sm text-slate-400 dark:text-slate-600 font-medium">Version 2.4.0 (Build 302)</p>
+<p class="text-xs text-slate-400 dark:text-slate-600 mt-1">Made with ❤️ for FinTech</p>
+</footer>
+</main>
+</div>
+
+</body></html>

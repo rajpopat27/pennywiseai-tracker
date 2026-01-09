@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Transaction Saved</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3713ec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#131022",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Import Manrope font */
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap');
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark text-[#100d1b] dark:text-white transition-colors duration-200">
+<div class="relative flex h-[100dvh] w-full flex-col overflow-hidden">
+<!-- Main Content Area: Centered content with airy spacing -->
+<div class="flex-grow flex flex-col items-center justify-center px-6 pb-12 w-full max-w-md mx-auto">
+<!-- Hero Icon: Animated-style checkmark -->
+<div class="relative mb-8 flex items-center justify-center">
+<div class="w-24 h-24 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center shadow-sm backdrop-blur-sm">
+<span class="material-symbols-outlined text-6xl text-primary select-none">check</span>
+</div>
+</div>
+<!-- Status Heading -->
+<div class="text-center mb-10 space-y-2">
+<h1 class="text-3xl font-extrabold tracking-tight leading-tight text-[#100d1b] dark:text-white">Transaction Saved</h1>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Your expense has been successfully logged.</p>
+</div>
+<!-- Transaction Summary Card -->
+<div class="w-full bg-white dark:bg-[#1e1b2e] p-6 rounded-lg shadow-xl shadow-black/5 dark:shadow-black/20 flex flex-col items-center gap-5 relative overflow-hidden group">
+<!-- Decorative background blob -->
+<div class="absolute -top-10 -right-10 w-24 h-24 bg-primary/5 rounded-full blur-2xl"></div>
+<!-- Merchant / Category Image -->
+<div class="w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-800 bg-center bg-no-repeat bg-cover shadow-inner ring-4 ring-background-light dark:ring-background-dark" data-alt="Top down view of a latte with heart foam art" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCnAm8tZX4KwJErfecbqmRlXH0OtkEHxwFFGq_LXeJKZcpJEwiJnL4mbLzeCYKnaMuTRXO8kkjXVFsyDLVUuOkLb0yExWtj8I5NlT-ey2T_lX4bbXbdU_tCzbzGcWuGIb5u6GN-o37FPRNx8Jy0el6nV0oQ8QoW3KLNdo4bZ5zVNQ4H0cfBnmlfR-CYOfwet1bXIrV7MS36B_6dsZNmFDkVvD32WkZMd87PXk2Hz_9Ll7dC1AYAx76psPqDqOHW3SZbu1MVB_BshA");'>
+</div>
+<div class="flex flex-col items-center text-center gap-1 w-full">
+<!-- Amount -->
+<p class="text-4xl font-extrabold text-[#100d1b] dark:text-white tracking-tight">-$24.00</p>
+<!-- Category & Details -->
+<div class="flex flex-col items-center gap-2 mt-2">
+<div class="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 dark:bg-primary/10 border border-primary/10 dark:border-primary/20">
+<span class="material-symbols-outlined text-sm text-primary">local_cafe</span>
+<span class="text-sm font-bold text-primary">Coffee</span>
+</div>
+<p class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-1">Chase Sapphire</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Actions: Pinned to bottom -->
+<div class="w-full px-6 pb-8 pt-4 bg-background-light dark:bg-background-dark max-w-md mx-auto z-10">
+<div class="flex flex-col gap-3">
+<!-- Done Button -->
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 px-5 bg-primary hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 text-[#f9f8fc] text-base font-bold leading-normal tracking-[0.015em] active:scale-[0.98] transform duration-100">
+<span class="truncate">Done</span>
+</button>
+<!-- View All Link -->
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-4 bg-transparent text-[#100d1b] dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-sm font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">View All Transactions</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>
